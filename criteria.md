@@ -6,6 +6,11 @@ unit 5 **before** anything was trained.
 Labels: `analysis`, `hot_take`, `request`, `experience`. Four labels means a
 random guesser gets about 25%.
 
+Planned label mix for 200 posts: `hot_take` 90 (45%), `request` 40 (20%),
+`experience` 40 (20%), `analysis` 30 (15%). With a 70/15/15 split that is
+about 30 posts in the held-out set. These are plans made before collecting;
+the real counts go in the README's Dataset section.
+
 ---
 
 ## 1.
@@ -15,7 +20,7 @@ three seeds.
 
 **Why this target:** My biggest label will probably be `hot_take`, because
 most comments in the r/touhou threads I read were short unsupported claims.
-If it is about [N]% of my data, a model that always says `hot_take` scores
+If it is about 45% of my data, a model that always says `hot_take` scores
 about that much, so 0.60 has to clear it by a real margin. It is also well
 above the 0.25 a random guesser gets on four labels. I did not go higher
 because the held-out set is only about 30 posts, so one seed can swing
@@ -26,12 +31,12 @@ several points on a handful of posts.
 ## 2.
 
 Every label has an F1 of at least 0.50 on the held-out set on every seed,
-except my smallest label (`________`), which must reach at least 0.40.
+except my smallest label (`analysis`), which must reach at least 0.40.
 
 **Why this target:** `request` and `experience` are recognisable from
 surface features (a question, "help me", "I like"), so they should be easier.
-`analysis` is the label I expect to be thinnest, with about [N] examples and
-only about [N] landing in the test split. An F1 on that few posts moves a
+`analysis` is the label I expect to be thinnest, with about 30 examples and
+only about 4 landing in the test split. An F1 on that few posts moves a
 lot between seeds, so I loosened its target and I am saying so up front
 rather than after I miss.
 
@@ -74,7 +79,7 @@ On the held-out set, at least 50% of true `analysis` posts are predicted as
 one I expect to be hardest, because many comments name a game or character
 without arguing from it. A model that collapses everything unsupported into
 `hot_take` would score fine on accuracy while missing the one label I care
-about most. This criterion measures that directly. With only about [N]
+about most. This criterion measures that directly. With only about 4
 `analysis` posts in test, the number is noisy, so I chose a recall that is
 better than a coin flip rather than a high one.
 
