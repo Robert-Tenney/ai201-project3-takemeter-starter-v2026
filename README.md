@@ -1,18 +1,174 @@
+# TakeMeter
+
+> ### 👋 Start here
+>
+> **New to this repo? Read [RUNNING.md](RUNNING.md) first** — setup, the
+> notebook, the baseline, and what to do when something breaks.
+>
+> Once `python test.py` passes:
+>
+> ```bash
+> head -5 data/practice_labels.csv     # the shape your labels.csv needs
+> ```
+>
+> Then open `takemeter.ipynb` **in this folder** — in VS Code, or with
+> `jupyter notebook` if you prefer. Pick the kernel: the `.venv` inside this
+> project. Run section 1, which reports the hardware you'll be training on.
+> Everything else waits until you have data.
+>
+> Nothing to upload, nothing to connect, no accounts and no keys. The notebook
+> runs on your machine and writes next to your code.
+>
+> **The rest of this file is your submission.** Fill it in as you go.
+
+---
+
+<!-- ═══════════════════════ UNIT 5 — THE BUILD ═══════════════════════ -->
+
+## What This Does
+
+This project sorts text from r/touhou, the public subreddit for the Touhou
+Project franchise, into four kinds: `analysis` (a point argued from a
+specific checkable thing in the games or manga), `hot_take` (a confident
+claim with nothing behind it), `request` (asking the community for something
+a reply could supply), and `experience` (the writer's own history or feelings
+with Touhou). The subreddit is mostly art and memes, so the classifier only
+looks at posts and comments that have real text. I chose labels based on what
+the text is doing, because the community's own flairs (Help, Fan Discussion,
+Game Discussion) were too coarse to separate an argued opinion from a bare
+one.
+
+---
+
+## Label Taxonomy
+
+Scope: text in r/touhou. Examples come from Help, Fan Discussion and Game
+Discussion posts, and from top-level comments in the Fan Discussion thread
+"What touhou opinion would put you in this situation?". Excluded: OC: Art and
+Found Fanart, Meme, Video and Cosplay posts (no text), fanfiction chapters,
+mod and weekly threads, and ads.
+
+### `analysis`
+
+**Definition:** Makes a point backed by a specific, checkable thing from the
+franchise (a game, character, spell card, date, or quote), and the point
+depends on it.
+
+**Example 1 (comment):**
+> It's less a hard canon fact and a bit more of extrapolation, but Koishi has
+> what feels like the biggest evidence of that Spell Card rules aren't as
+> foolproof as the community likes to paint them and that you probably can
+> loophole abuse. Release of Id and Superego are very similar in structure
+> and it's extra notorious because they're almost back to back, only
+> separated by a non-spell. They shoot heart-shaped danmaku in sort of
+> constantly rotating parabolic trajectories with the individual lanes
+> criss-crossing. The main difference being that former is shot outwards (and
+> gameplay-wise has hearts pile up at the bottom of screen), while the latter
+> "falls" inwards (and has the hearts disappear when they reach their
+> target). Even Twilight Frontier seems to have noticed; when she's playable
+> in the air fighters they're still separate supers, but her story appearance
+> in Hopeless Masquerade just merges them into one Spell Card that alternates
+> between the two patterns. [...]
+
+**Example 2 (comment):**
+> No, we don't need Mima back; there are several characters who fulfill that
+> role in the current canon, including Mizuchi. Continuing with the topic of
+> Mizuchi, she, along with the three fairies, would be among the best choices
+> for fighting games. Yorihime did win fairly in Silent Sinner in Blue.
+> Furthermore, that same manga confirms that the moon rabbits lead normal and
+> relatively happy lives, so she's not an abusive slave driver either.
+
+### `hot_take`
+
+**Definition:** A confident claim about Touhou with no support offered, or
+with a name or fact that is only decoration.
+
+**Example 1 (comment):**
+> The undeniable fact that sakuya sucks
+
+**Example 2 (comment):**
+> Fumos are over hyped and many jokes in the fandom suck
+
+### `request`
+
+**Definition:** Asks the community for something a reply could supply, such
+as an image, a song, an answer, a recommendation, or an imagined answer to a
+what-if.
+
+**Example 1 (post, Help flair):**
+> i need help finding old touhou youtube video
+> the synopsis is about voodoo doll in eientei, the straw of a kind. reisen
+> is targeted somehow. tewi finds it and decide to mess with reisen as usual.
+> after some time she had enough and just drop it on the ground i guess and
+> accidentally stepped on it, breaking undogein arm. the issue came to
+> eirin's light and after that maybe they just prohibits touching it ig. and
+> then some wicked shit happens i think. the voodoo or reise started
+> attacking tewi i think. the video is old one, mayhaps around the mid 2010s
+> . would can see the age in the models and animation. please help me.
+
+**Example 2 (post, Fan Discussion flair):**
+> Could touhou cast be able to stop the fall/nyx in persona 3
+> I am always wondering when playing persona 3 Could touhou cast able to stop
+> the fall/nyx Like how lunarian would react if they moon suddenly crack open
+> or how residents of gensokyo would react if they see the moon crack open
+> and inside is giant one eye. How would touhou cast react and stop it to
+> save they land
+
+### `experience`
+
+**Definition:** Describes the writer's own situation or feelings with Touhou,
+without asking for anything or making a claim about the franchise.
+
+**Example 1 (comment):**
+> For me EoSD and LoLK are by far my favorite, I'm just biased though.
+> Actually I like PCB and IN a lot. PoFV I totally get it. Is it not fair to
+> give them a pass for being older?
+
+**Example 2 (comment):**
+> I'm just a Reimu(all),Sakuya(fanon) and Yukari(fanon) hater and a
+> Yuuka,letty,Seiga lover. that's far from what you're asking.
+
+### The hardest boundary
+
+**Which two labels:** `analysis` vs `hot_take`
+
+**The post that sits between them (comment):**
+> Every Touhou game from 10 to 15 is superior in gameplay, characters, story
+> and music to every game from Touhou 6 to 9. With EoSD being by far the most
+> extremely overrated game in the series and IN being the only one of the
+> older windows games that still holds up in most aspects.
+
+**The decision rule I used every time:** [REWORD IN YOUR OWN WORDS. Draft:]
+Naming a game is not support. If the point would fall apart without a
+specific fact the writer actually cites (a spell card's structure, a manga
+event), it's `analysis`, even if the tone is heated. If the names are only
+labels on a judgment, it's `hot_take`, even if the tone is calm.
+
+**Other boundaries I hit:** `experience` vs `request`, from the post "WTF is
+Touhou how can I stop Touhou from appearing" (a question in the title, but
+the body is the writer's own YouTube frustration; I chose `experience`
+because a reply could not give the writer anything they asked for). And
+`experience` vs `hot_take`, from "Junko is easier than Clownpiece. I can do
+Junko in 2 lives with Reisen, Clown took me 4." (the only support is the
+writer's own runs).
+
+---
+
 ## The Dataset
 
 **Where the posts came from:** r/touhou, public pages only. Posts come from
 the Help, Fan Discussion and Game Discussion flairs. Many rows are top-level
 comments from the Fan Discussion thread "What touhou opinion would put you in
-this situation?", because that is where long text arguments appear. I have
-asked my TF whether comments count as posts: [ANSWER HERE]. Excluded: art,
-memes, video, cosplay, fanfiction chapters, mod threads and ads.
+this situation?", because that is where long text arguments appear. I asked
+my TF whether comments count as posts: [ANSWER HERE]. Excluded: art, memes,
+video, cosplay, fanfiction chapters, mod threads and ads.
 
-**How I labelled them:** [FILL IN.] First I labelled 20 rows cold with no
-tools and marked them `cold` in the note column. Then I had Claude pre-label
-the rest from my definitions, and I read and corrected every row. Rows
-pre-labelled by Claude say so in the note column. The first 25 rows in
-`labels.csv` were pre-labelled by Claude from posts I pasted. I have changed
-0 of them so far; I will update this once I have read all 25.
+**How I labelled them:** [FILL IN IN YOUR OWN WORDS.] First I labelled 20
+rows cold with no tools and marked them `cold` in the note column. Then I had
+Claude pre-label the rest from my definitions, and I read and corrected every
+row. Rows pre-labelled by Claude say so in the note column. The first 25 rows
+in `labels.csv` were pre-labelled by Claude from posts I pasted. I have
+changed 0 of them so far; I will update this once I have read all 25.
 
 **Counts per label (interim, 25 rows so far):**
 
@@ -56,7 +212,186 @@ from criteria.md: hot_take 90, request 40, experience 40, analysis 30.]
 > *Could have been:* `experience` or `hot_take`
 >
 > *I chose `experience`, because:* the only support is the writer's own
-> runs, which makes it a report of their play. [REWORD: also say what you
-> would do if a reply argued it as a general claim about the game.]
+> runs, which makes it a report of their play. [REWORD: say what you would
+> do if a reply argued it as a general claim about the game.]
 
 ---
+
+## The Training Run
+
+**Base model:** `distilbert-base-uncased` (the notebook default).
+
+**Settings:** 3 epochs, learning rate 2e-5, batch size 16, 128 tokens per
+post, seed 42.
+
+**Anything I changed from the defaults, and why:** I did not change any
+training setting. The only notebook edit was the `LABELS` list, set to
+`["analysis", "hot_take", "request", "experience"]` to match `labels.csv`,
+plus my name and email in section 1.
+
+One thing I am watching rather than changing: 128 tokens truncates long
+posts. My `analysis` examples are among my longest comments, several a few
+hundred words, so the model may only see the opening of them. If `analysis`
+recall is low in the next unit, truncation is a cause to check before
+blaming the labels.
+
+**Split sizes:** about 140 train / 30 validation / 30 test (70/15/15 of 200
+rows, stratified). Expected per-label counts in the test split, from my
+planned mix in `criteria.md`:
+
+| Label | Expected in test | Under the notebook's threshold of 8? |
+|---|---|---|
+| `hot_take` | about 14 | no |
+| `request` | about 6 | yes |
+| `experience` | about 6 | yes |
+| `analysis` | about 4 | yes |
+
+These are expected values, not what the notebook printed. [REPLACE with the
+section 3 table once `labels.csv` is final, and say which labels it
+flagged.] Three of four labels are under 8 test examples, so their F1 will
+move a lot between seeds. That is a known property of my dataset size and
+will explain a lot of next unit's variance.
+
+**Device:** [CONFIRM from section 1 or the `device` and `device_name` fields
+in `results.json`: `cpu`, `cuda` or `mps`.] Two runs on the same data and
+seed can differ across hardware because the arithmetic runs in a slightly
+different order, so the device is part of the result.
+
+---
+
+## How I Used AI
+
+**Moment 1**
+
+- *What I asked for:* I pasted real r/touhou posts and comments and asked
+  Claude to draft a label taxonomy from them and find one real example per
+  label.
+- *What came back:* A draft set of labels with one-sentence definitions, and
+  a proposed decision rule for the `analysis` vs `hot_take` boundary. The
+  final four labels (`analysis`, `hot_take`, `request`, `experience`) came
+  after the second moment below.
+- *What I changed:* [YOU FILL IN: which definitions or examples you edited,
+  and how you reworded the decision rule.]
+
+**Moment 2**
+
+- *What I asked for:* I pasted the r/touhou front page feed and asked Claude
+  to find a real post for each of my draft labels.
+- *What came back:* Claude sorted the text-bearing posts and reported that
+  none of them argued from a checkable fact or made a bare claim about the
+  franchise, so my `analysis` and `hot_take` labels had no real examples in
+  that feed. Two of the three real text posts fit no label at all. It also
+  pointed out that most of the feed was image-only.
+- *What I changed:* I stopped assuming `analysis` and `hot_take` existed and
+  went looking for them. I pasted a long Fan Discussion opinion thread, where
+  both appeared, and used Claude's list of the real examples there. I also
+  overrode Claude's three-label draft: I asked for `analysis` and `hot_take`
+  to be kept alongside `request` and `experience`, so Claude folded its
+  `speculation` label into `request`. Claude's labels for the examples are
+  its judgment; I am treating them as pre-labels to read and correct, not as
+  final.
+
+**Pre-labelling disclosure:** The 25 rows currently in `labels.csv` were
+pre-labelled by Claude from posts I pasted, and each says so in the note
+column. [YOU FILL IN: how many you changed after reading, which 20 rows you
+labelled cold yourself, and whether any later rows were also pre-labelled.]
+
+<!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
+
+     Don't fill these in during unit 5.
+     ═══════════════════════════════════════════════════════════════════ -->
+
+---
+
+## Baseline vs. Trained
+
+| Measure | Baseline | Trained | Difference |
+|---|---|---|---|
+| Overall accuracy |  |  |  |
+| Macro F1 |  |  |  |
+| F1 — `analysis` |  |  |  |
+| F1 — `hot_take` |  |  |  |
+| F1 — `request` |  |  |  |
+| F1 — `experience` |  |  |  |
+
+**What I predicted before I looked:**
+
+**What the gap actually means:**
+
+---
+
+## Run Log — Before
+
+| Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
+|---|---|---|---|---|---|
+| 1.  |  |  |  |  |  |
+| 2.  |  |  |  |  |  |
+| 3.  |  |  |  |  |  |
+| 4.  |  |  |  |  |  |
+| 5.  |  |  |  |  |  |
+
+### Confusion matrix
+
+| true \ predicted |  |  |  |  |
+|---|---|---|---|---|
+| **** |  |  |  |  |
+| **** |  |  |  |  |
+| **** |  |  |  |  |
+| **** |  |  |  |  |
+
+**My biggest off-diagonal number, and what it means:**
+
+---
+
+## Verdicts and Diagnoses
+
+| # | Criterion | Target | Verdict | How I decided |
+|---|---|---|---|---|
+| 1 |  |  |  |  |
+| 2 |  |  |  |  |
+| 3 |  |  |  |  |
+| 4 |  |  |  |  |
+| 5 |  |  |  |  |
+
+**Diagnoses**
+
+---
+
+## Agreement Report
+
+**Agreement rate:** ___ / 30 = ___%
+
+**Disagreements**
+
+**What the pattern in my disagreements tells me:**
+
+---
+
+## The Improvement
+
+**What I changed:**
+
+**Which diagnosis pointed at it:**
+
+### Run Log — After
+
+| Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
+|---|---|---|---|---|---|
+| 1.  |  |  |  |  |  |
+| 2.  |  |  |  |  |  |
+| 3.  |  |  |  |  |  |
+| 4.  |  |  |  |  |  |
+| 5.  |  |  |  |  |  |
+
+**Did it help, and how do I know:**
+
+---
+
+## What's Still Broken
+
+**The gap between what I meant my labels to capture and what the model
+learned:**
+
+---
+
+📖 **How to run this project: [RUNNING.md](RUNNING.md)**
