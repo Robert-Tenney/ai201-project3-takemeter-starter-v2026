@@ -3,111 +3,80 @@
 Five criteria that say what "working" means for this classifier, written in
 unit 5 **before** anything was trained.
 
-**All five are yours this time.** None are given. You've had two projects of
-practice.
-
-An acceptance criterion names a number. *"The model is accurate"* is an
-opinion. *"Every label has an F1 of at least 0.60 on the held-out set"* is a
-criterion.
-
-Under each, write a sentence or two on **why that number**. A reason that says
-something about your data or your taxonomy earns credit — *"I picked 0.60 F1
-for `reaction` because it's my smallest label and I only have about 50
-examples of it"*. A reason that could be attached to any project does not.
-
-> Missing your own targets next unit costs you nothing. Setting a target so
-> easy you can't miss it does.
-
----
-
-## Pick numbers you can defend
-
-Not numbers that sound impressive. Three labels means a coin-flip guesser gets
-about 33%, so a target of 0.40 is barely a target. Your number should sit
-somewhere you'd honestly call useful.
-
-**Cover at least three of these five areas.** They're here as prompts, not as a
-form to fill in — a criterion that fits none of them is fine if it names a
-number.
-
-| Area | A question it could answer |
-|---|---|
-| Overall accuracy | How often does it need to be right to be worth using? |
-| Per-label performance | Is one label allowed to be much worse than the others? |
-| Balance | How lopsided can your label counts get before it's a problem? |
-| Consistency | If someone else labelled the same posts, how often should you agree? |
-| Confidence | Should a confident prediction be right more often than an unsure one? |
-
-Two things worth knowing before you pick numbers, because both will affect
-whether you hit them:
-
-- **Your smallest label will have the jumpiest score.** If a label has 50
-  examples, about 8 land in the test split. An F1 computed on 8 examples moves
-  a lot between seeds. A target for that label should be looser than one for
-  your biggest label, and saying so is a good reason.
-- **Unit 6 tests across three seeds, and the target has to hold across all
-  three.** A target of 0.65 against results of 0.71, 0.62, 0.68 is a **miss**.
-  Pick with that in mind — it is stricter than it first sounds.
+Labels: `analysis`, `hot_take`, `request`, `experience`. Four labels means a
+random guesser gets about 25%.
 
 ---
 
 ## 1.
 
-<!-- Your criterion. It must name a number. -->
+Overall accuracy on the held-out set is at least 0.60 on every one of the
+three seeds.
 
-
-
-**Why this target:**
-
-
+**Why this target:** My biggest label will probably be `hot_take`, because
+most comments in the r/touhou threads I read were short unsupported claims.
+If it is about [N]% of my data, a model that always says `hot_take` scores
+about that much, so 0.60 has to clear it by a real margin. It is also well
+above the 0.25 a random guesser gets on four labels. I did not go higher
+because the held-out set is only about 30 posts, so one seed can swing
+several points on a handful of posts.
 
 ---
 
 ## 2.
 
-<!-- Your criterion. -->
+Every label has an F1 of at least 0.50 on the held-out set on every seed,
+except my smallest label (`________`), which must reach at least 0.40.
 
-
-
-**Why this target:**
-
-
+**Why this target:** `request` and `experience` are recognisable from
+surface features (a question, "help me", "I like"), so they should be easier.
+`analysis` is the label I expect to be thinnest, with about [N] examples and
+only about [N] landing in the test split. An F1 on that few posts moves a
+lot between seeds, so I loosened its target and I am saying so up front
+rather than after I miss.
 
 ---
 
 ## 3.
 
-<!-- Your criterion. -->
+No label is more than 60% of `labels.csv`, and my smallest label has at
+least 25 examples.
 
-
-
-**Why this target:**
-
-
+**Why this target:** The brief's cap is 70%. I set mine lower because
+`hot_take` is the label I expect to run large, and at 70% a model that guesses
+it every time scores 0.70, which would beat my accuracy target without
+learning anything. The 25-example floor gives the smallest label about 4 in
+the test split, which is still jumpy, but fewer than that makes its F1
+meaningless.
 
 ---
 
 ## 4.
 
-<!-- Your criterion. -->
+My agreement with the staff labels on the 30 staff posts is at least 70%
+(21 of 30).
 
-
-
-**Why this target:**
-
-
+**Why this target:** The staff taxonomy note says several of those posts were
+chosen because they are ambiguous and that a rate in the 70s is normal. I
+picked the bottom of that range rather than above it, because I have not yet
+applied someone else's written rule to a real set. I will compare it with my
+20 cold-labelled rows in `labels.csv` to see whether my own labels were
+consistent.
 
 ---
 
 ## 5.
 
-<!-- Your criterion. -->
+On the held-out set, at least 50% of true `analysis` posts are predicted as
+`analysis` (recall of at least 0.50), on every seed.
 
-
-
-**Why this target:**
-
-
+**Why this target:** The boundary between `analysis` and `hot_take` is the
+one I expect to be hardest, because many comments name a game or character
+without arguing from it. A model that collapses everything unsupported into
+`hot_take` would score fine on accuracy while missing the one label I care
+about most. This criterion measures that directly. With only about [N]
+`analysis` posts in test, the number is noisy, so I chose a recall that is
+better than a coin flip rather than a high one.
 
 ---
 
