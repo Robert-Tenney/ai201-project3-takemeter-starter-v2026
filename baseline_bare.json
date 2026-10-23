@@ -1,0 +1,60 @@
+{
+  "model": "facebook/bart-large-mnli",
+  "n": 4,
+  "seed": 42,
+  "held_out": true,
+  "used_definitions": false,
+  "scores": {
+    "n": 4,
+    "accuracy": 0.25,
+    "f1_macro": 0.125,
+    "per_label": {
+      "analysis": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "experience": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 1
+      },
+      "hot_take": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "support": 2
+      },
+      "request": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      }
+    }
+  },
+  "predictions": [
+    {
+      "text": "The moment ZUN dies, the franchise, the entire fandom, and the entire culture will die with him. His hope of Touhou being the next \"greek mythology\" will never come to fruition and Skibidi toilet will be the next big thing that would replace Touhou's throne.",
+      "gold": "hot_take",
+      "predicted": "experience"
+    },
+    {
+      "text": "Junko is easier than Clownpiece. I can do Junko in 2 lives with Reisen, Clown took me 4.",
+      "gold": "experience",
+      "predicted": "hot_take"
+    },
+    {
+      "text": "Touhou 15 is the worst game in the series and that's not just me venting because I'm bad. I can only think of one actually fun spell to capture in the entire game, everything else is either forgettable or just genuine cancer (Clownpiece). Junko's difficulty comes not from actually difficult patterns, but from her bullets having bigger hitboxes than every other bullet in the series. Anywhere else those things would be smaller than they look, but nah, Junko's are just 1:1 with the sprite, fuck your muscle memory for the entire rest of the series. I haven't even tried Hecatia and I don't plan to torture myself like that anytime soon. I don't even care about any of the characters that much, but that's more of a me thing. The only good thing 15 has going for it is the music. ZUN on his way to put some of his best work into a game I never want to touch.",
+      "gold": "analysis",
+      "predicted": "experience"
+    },
+    {
+      "text": "Every Touhou game from 10 to 15 is superior in gameplay, characters, story and music to every game from Touhou 6 to 9. With EoSD being by far the most extremely overrated game in the series and IN being the only one of the older windows games that still holds up in most aspects.",
+      "gold": "hot_take",
+      "predicted": "hot_take"
+    }
+  ]
+}
