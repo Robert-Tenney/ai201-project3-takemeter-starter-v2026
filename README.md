@@ -387,9 +387,27 @@ on the new `test_split.csv`, before this table means anything.
 
 ### What my definitions were worth
 
-Not measured yet. Command: `python baseline.py --definitions nonexistent.txt
---out baseline_bare.json`. Bare-names accuracy: <x.xxx>, against 0.250 with
-my definitions, so the definitions were worth <+/-x.xxx>.
+I ran the baseline a second time with bare label names instead of my
+definitions (`python baseline.py --definitions nonexistent.txt --out
+baseline_bare.json`, which falls back to the label names alone). Both runs scored
+the same 4 held-out posts.
+
+| Measure | With my definitions | Bare label names | Difference |
+|---|---|---|---|
+| Overall accuracy | 0.250 | 0.250 | +0.000 |
+| Macro F1 | 0.100 | 0.125 | -0.025 |
+| F1 `analysis` | 0.400 | 0.000 | +0.400 |
+| F1 `experience` | 0.000 | 0.000 | +0.000 |
+| F1 `hot_take` | 0.000 | 0.500 | -0.500 |
+| F1 `request` | 0.000 | 0.000 | +0.000 |
+
+On accuracy my definitions were worth nothing (0.250 both ways), and on macro F1
+they were slightly worse (0.100 against 0.125). The definitions changed which
+label the baseline defaulted to, not how well it did: with them it called all 4
+posts `analysis`, and with bare names it got one of the two `hot_take` posts
+right but lost the `analysis` post. With 4 test posts, one post is 25 points of accuracy, so I read
+this as "no measurable difference", not as evidence the definitions are bad. The
+baseline table above is the run with definitions.
 
 ---
 
