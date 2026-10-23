@@ -294,7 +294,28 @@ of the result.
   its judgment; I am treating them as pre-labels to read and correct, not as
   final.
 
+**Moment 3 (unit 6)**
 
+- *What I asked for:* Help working through the unit 6 milestones: running the
+  baseline, reading my three-seed results and confusion matrix, drafting the
+  README sections, and writing the verdicts and diagnoses.
+- *What came back:* Claude drafted the README text for Baseline vs. Trained, the
+  Run Log, and the Verdicts and Diagnoses sections from my uploaded result
+  files. It also computed the baseline's score on my 4 held-out posts from the
+  baseline predictions it had already saved, and pointed out that my 25-row
+  dataset, not my training settings, explained most of my misses. It declined to
+  label the 30 staff posts for me.
+- *What I changed:* <YOU FILL IN: which sentences you rewrote, which numbers you
+  checked against the JSON files yourself, what you disagreed with, and whether
+  you kept or changed the "EPOCHS 3 to 15" choice.>
+- *What I did myself:* <YOU FILL IN: confirm you labelled the 30 staff posts
+  yourself before seeing the staff labels, and wrote the adjudication of each
+  disagreement.>
+
+**Pre-labelling disclosure:** The 25 rows currently in `labels.csv` were
+pre-labelled by Claude from posts I pasted, and each says so in the note
+column. No row is marked `cold`, so none of the 25 was labelled unaided, and
+no later rows were added. <YOU FILL IN: how many you changed after reading.>
 
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
@@ -413,7 +434,7 @@ Targets are the originals from `criteria.md`, unchanged. Values are from
 | 1. Overall accuracy | >= 0.60 on every seed | 0.500 | 0.250 | 0.500 | MISSED |
 | 2. Every label F1 (`analysis` >= 0.40, others >= 0.50) | all labels, every seed | `analysis` 0.000, `hot_take` 0.667, `request` 0.000, `experience` 0.000 | `analysis` 0.000, `hot_take` 0.500, `request` 0.000, `experience` 0.000 | `analysis` 0.000, `hot_take` 0.667, `request` 0.000, `experience` 0.000 | MISSED |
 | 3. No label > 60% of `labels.csv`; smallest label >= 25 examples | both parts | largest 44%, smallest 4 | same (a property of `labels.csv`, not of a seed) | same | MISSED |
-| 4. Agreement with staff >= 70% (21 of 30) | one set of 30 posts | not seed-based | not seed-based | not seed-based | <MET or MISSED, from `agreement.py`> |
+| 4. Agreement with staff >= 70% (21 of 30) | one set of 30 posts | 30 of 30 (100%) | not seed-based | not seed-based | MET |
 | 5. Recall on `analysis` >= 0.50 on every seed | every seed | 0.000 | 0.000 | 0.000 | MISSED |
 
 ### Confusion matrix
@@ -446,7 +467,7 @@ still never predicted `analysis` or `request`.
 | 1 | Overall accuracy | >= 0.60 on every seed | MISSED | 0.500, 0.250, 0.500. All three are under 0.60, and the target had to hold on every seed. |
 | 2 | Every label F1 | >= 0.50 each, `analysis` >= 0.40, every seed | MISSED | Three of four labels scored 0.000 on all three seeds. Only `hot_take` was above 0 (0.667, 0.500, 0.667), and it met its 0.50 line on every seed. See the note below. |
 | 3 | Label balance | no label > 60%; smallest >= 25 | MISSED | The largest label is `hot_take` at 44%, which passes. The smallest label is `request` with 4 examples, far under 25, so the second part fails. |
-| 4 | Agreement with staff | >= 70% (21 of 30) | <MET or MISSED> | <rate from `agreement.py`, compared with 21 of 30> |
+| 4 | Agreement with staff | >= 70% (21 of 30) | MET | 30 of 30 matched staff (100%), against a target of 21. |
 | 5 | Recall on `analysis` | >= 0.50 on every seed | MISSED | Recall was 0.000 on all three seeds. The model never predicted `analysis`. |
 
 **Diagnoses**
@@ -486,9 +507,13 @@ I collected 25 of the 200 rows I planned. Criterion 2's wording also assumes
 is a mismatch between my plan and my data, not a broken criterion, so I am not
 revising it.
 
-**Criterion 4:** <Write after `agreement.py`. State the rate, which label pair
-caused most disagreements, and whether it is the `analysis` / `hot_take` pair
-that my baseline and my model both struggled with.>
+**Criterion 4:** Met, so there is nothing to diagnose as a miss. I matched
+staff on all 30 posts, including the 7 staff marked as borderline. What it does
+and does not tell me: it shows I can apply a written `analysis` / `hot_take` /
+`reaction` rule consistently, so my misses on criteria 1, 2 and 5 are not
+explained by me being loose with a written rule. It does not show that Claude's
+pre-labels on my own 25 rows are right or consistent, because I did not label
+those. So it rules out one cause of the misses without confirming my own labels.
 
 **Evidence from the baseline that bears on the boundary:** the zero-shot
 baseline called 10 of 11 `hot_take` posts `analysis` on the 25-post fallback
@@ -505,36 +530,39 @@ measurable and I got a number for each, so I have not revised any.
 
 **Staff taxonomy:** `analysis`, `hot_take`, `reaction`, applied under the
 definitions and decision rules in `data/staff_taxonomy.md` (not my own
-taxonomy). I labelled all 30 posts myself before seeing the staff labels, and
-committed `my_staff_labels.csv` before running `agreement.py`.
+taxonomy). I labelled all 30 posts myself, and `agreement.py` then compared
+my file with the staff labels. <YOU CONFIRM: whether you labelled before seeing
+the staff labels, and when `my_staff_labels.csv` was committed. Keep only what
+is true.>
 
-**Agreement rate:** <N> / 30 = <NN>%
+**Agreement rate:** 30 / 30 = 100%
 
-My target in `criteria.md` (criterion 4) was at least 70% (21 of 30).
-<Met / Missed>.
+My target in `criteria.md` (criterion 4) was at least 70% (21 of 30). Met.
 
-**Disagreements**
+**Disagreements:** none, so there is nothing to adjudicate. `agreement.py` listed
+no disagreements and wrote `agreement_results.json`.
 
-**1.** <first ~12 words of the post>...
-- Staff said `<label>`, I said `<label>`.
-- **My call:** <staff is right / I am right / split>, because <which numbered
-  rule (1 to 4) applies and what the post actually does under it>.
-- **Pile:** <(a) rule covered it, I applied it loosely / (b) rule doesn't say /
-  (c) rule ambiguous, my reading defensible>
+**Was the set easy, or is the rule tight?** The staff file marks 7 of the 30
+posts as borderline (`sp_005`, `sp_010`, `sp_014`, `sp_019`, `sp_020`, `sp_028`,
+`sp_029`), and I matched staff on all 7. The taxonomy says a rate in the 70s is
+normal because posts were picked for ambiguity, so 100% is above what staff
+expected. <YOU FILL IN, in your own words and honestly: which of the 7 borderline
+posts you hesitated on, and which numbered rule (1 to 4) settled each one. Say
+that you labelled all 30 before seeing `staff_labels.csv`, if that is true, and
+whether you read the staff file's `why` column before or after labelling.>
 
-**2.** <repeat for every disagreement>
+**Counts by pile:** not applicable, since there are no disagreements.
 
-**Counts by pile:** (a) <n>, (b) <n>, (c) <n>.
-
-**What the pattern in my disagreements tells me:** <Which label pair came up
-most? Is it the same boundary my confusion matrix struggled with? Say plainly
-what this can and cannot show.>
+**What this tells me about my labels:** Matching on all 30 shows I apply a
+written rule the way its authors did. It is the only instrument I had for
+telling a labelling problem from a model problem, and here it points away from
+my own application of a written rule. It does not cover my 25 training rows,
+which Claude pre-labelled, so I cannot use it to say those labels are
+consistent.
 
 **A limit on this check:** my own `labels.csv` rows were pre-labelled by
 Claude and none is marked `cold`, so I cannot compare this rate against my own
-cold labels as `criteria.md` planned. This check shows whether I can apply a
-written rule consistently. It does not show whether Claude's pre-labels on my
-25 rows are right.
+cold labels as `criteria.md` planned.
 
 ---
 
@@ -555,9 +583,8 @@ the 0.25 of a model guessing among four labels, and it predicted `hot_take` for
 every test post on seed 42. Training longer is the one change that addresses
 that cause directly. I did not pick "add examples" or "relabel a boundary"
 because the first would change `test_split.csv` and break the comparison with my
-baseline, and the second needs my agreement report to say which boundary I
-applied two ways. <Edit this sentence to match what your agreement report
-actually showed.>
+baseline, and the second had nothing to point at: my agreement check found no
+disagreements, so it named no boundary that I applied two ways.
 
 **What I expect:** More epochs should raise confidence and spread predictions
 across labels. It may not fix criterion 3, which is about how many examples I
@@ -579,7 +606,7 @@ Numbers are from `results_three_seeds_after.json`. Device: <cpu, from the JSON>.
 | 1. Overall accuracy | >= 0.60 on every seed | <x.xxx> | <x.xxx> | <x.xxx> | <MET / MISSED> |
 | 2. Every label F1 (`analysis` >= 0.40, others >= 0.50) | all labels, every seed | <four F1s> | <four F1s> | <four F1s> | <MET / MISSED> |
 | 3. No label > 60%; smallest >= 25 | both parts | largest 44%, smallest 4 | same | same | MISSED (unchanged, a property of `labels.csv`) |
-| 4. Agreement with staff >= 70% | one set of 30 posts | not seed-based | not seed-based | not seed-based | <same verdict as the before log> |
+| 4. Agreement with staff >= 70% | one set of 30 posts | 30 of 30 (100%) | not seed-based | not seed-based | MET (unchanged) |
 | 5. Recall on `analysis` >= 0.50 on every seed | every seed | <x.xxx> | <x.xxx> | <x.xxx> | <MET / MISSED> |
 
 ### Before and after, side by side
@@ -623,17 +650,17 @@ training. `labels.csv` has 25 rows and the smallest label has 4. The only fix is
 collecting and labelling more posts. I stopped because that is the work of
 unit 5, not a change I could make and measure in this unit.
 
-**Criterion 4 (agreement with staff >= 70%):** <MET or MISSED, from
-`agreement_results.json`.> <If missed: what rule I applied loosely, and what I
-would do to apply it consistently. If met: say whether the set seemed easy or my
-reading of the rules was tight.>
+**Criterion 4 (agreement with staff >= 70%):** MET at 30 of 30. Nothing left
+to fix here. The check does not cover my 25 pre-labelled rows, which is the part
+I would audit next.
 
 **Criterion 5 (recall on `analysis` >= 0.50 every seed):** <MISSED or MET after
 the change.> If missed: my baseline called 10 of 11 `hot_take` posts `analysis`,
 and my model never predicted `analysis`, so both models struggle with that
-boundary in opposite directions. I would first reread my own `analysis` vs
-`hot_take` rule against my agreement disagreements, then add `analysis`
-examples. I stopped because 5 `analysis` rows (about 1 in the test split) cannot
+boundary in opposite directions. My staff check showed I can apply a written
+`analysis` / `hot_take` rule consistently, so I would first reread the 5
+`analysis` and 11 `hot_take` pre-labels in `labels.csv` against my own rule, then
+add `analysis` examples. I stopped because 5 `analysis` rows (about 1 in the test split) cannot
 support any conclusion about that boundary.
 
 **The gap between what I meant my labels to capture and what the model
