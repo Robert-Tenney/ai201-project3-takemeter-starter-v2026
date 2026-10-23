@@ -628,50 +628,52 @@ is bigger than that. If it did not help, say so. That is a complete result.>
 
 ## What's Still Broken
 
-For each criterion still missed after the improvement. Fill each `<...>` from
-`results_three_seeds_after.json` and `agreement_results.json`. If the improvement
-fixed one, delete that row's entry and say so.
+Four of my five criteria are missed in the before run, and criterion 4 is met.
+For each one: what I would do, and why I stopped. The "After the change" line on
+criteria 1, 2 and 5 is for the result of the `EPOCHS` 3 to 15 re-run.
 
-**Criterion 1 (accuracy >= 0.60 every seed):** <MISSED or MET after the change.>
-If missed: I would label more rows. The measure is a 4-post test set, where one
-post is 25 points, so no training change can make this number stable. I stopped
+**Criterion 1 (accuracy >= 0.60 every seed):** Missed before (0.500, 0.250,
+0.500). *After the change:* <MET or MISSED, with the three accuracies.> What I
+would do next: label more rows. The measure is a 4-post test set, where one post
+is 25 points, so no training change can make this number stable. I stopped
 because labelling 150 to 200 rows by hand, with care, did not fit this unit, and
 it would also have changed `test_split.csv` and broken the like-for-like
 comparison with my baseline.
 
-**Criterion 2 (every label F1):** <MISSED or MET after the change.> If missed:
-`request` has no posts in the test split, so its F1 cannot be measured at all
-until it has more examples (it has 4 in `labels.csv`). I would add `request`
-examples first, because it is my thinnest label. I stopped for the same reason as
+**Criterion 2 (every label F1):** Missed before (three labels at 0.000 on every
+seed). *After the change:* <MET or MISSED, with the four F1s per seed.> What I
+would do next: add `request` examples first, because it is my thinnest label.
+`request` has no posts in the test split, so its F1 cannot be measured until it
+has more examples (it has 4 in `labels.csv`). I stopped for the same reason as
 criterion 1.
 
-**Criterion 3 (label balance, smallest >= 25):** MISSED, and unchanged by
+**Criterion 3 (label balance, smallest >= 25):** Missed, and unchanged by
 training. `labels.csv` has 25 rows and the smallest label has 4. The only fix is
 collecting and labelling more posts. I stopped because that is the work of
 unit 5, not a change I could make and measure in this unit.
 
-**Criterion 4 (agreement with staff >= 70%):** MET at 30 of 30. Nothing left
-to fix here. The check does not cover my 25 pre-labelled rows, which is the part
-I would audit next.
+**Criterion 4 (agreement with staff >= 70%):** Met at 30 of 30. Nothing left to
+fix here. The check does not cover my 25 pre-labelled rows, which is the part I
+would audit next.
 
-**Criterion 5 (recall on `analysis` >= 0.50 every seed):** <MISSED or MET after
-the change.> If missed: my baseline called 10 of 11 `hot_take` posts `analysis`,
-and my model never predicted `analysis`, so both models struggle with that
-boundary in opposite directions. My staff check showed I can apply a written
-`analysis` / `hot_take` rule consistently, so I would first reread the 5
-`analysis` and 11 `hot_take` pre-labels in `labels.csv` against my own rule, then
-add `analysis` examples. I stopped because 5 `analysis` rows (about 1 in the test split) cannot
+**Criterion 5 (recall on `analysis` >= 0.50 every seed):** Missed before (0.000
+on every seed). *After the change:* <MET or MISSED, with the three recalls.>
+What I would do next: my baseline called 10 of 11 `hot_take` posts `analysis`,
+and my model never predicted `analysis`, so the two models fail that boundary in
+opposite directions. My staff check showed I can apply a written `analysis` /
+`hot_take` rule consistently, so I would first reread the 5 `analysis` and 11
+`hot_take` pre-labels in `labels.csv` against my own rule, then add `analysis`
+examples. I stopped because 5 `analysis` rows (about 1 in the test split) cannot
 support any conclusion about that boundary.
 
 **The gap between what I meant my labels to capture and what the model
-learned:** I meant `analysis` to mean an argument that depends on a specific,
-checkable fact, `hot_take` a claim with nothing behind it, `request` a question
-a reply could answer, and `experience` the writer's own situation. What the
-model learned, judging by the seed 42 confusion matrix, is much simpler: it
-called every test post `hot_take`, the biggest label, so it learned the shape of
-my data and not these four ideas. <After the improvement: say whether the after
-matrix still shows every post in one column or whether predictions spread across
-labels, and what that changes about this sentence.>
+learned:** I meant `analysis` to be an argument that depends on a specific,
+checkable fact, `hot_take` a claim with nothing behind it, `request` something a
+reply could supply, and `experience` the writer's own situation. In the before
+run the seed 42 confusion matrix shows the model called all 4 test posts
+`hot_take`, the biggest label, so it learned the shape of my data and not these
+four ideas. *After the change:* <say whether the after-run matrix still puts
+every post in one column or spreads predictions across labels.>
 
 **Anything I would not trust in these results:** every number comes from a
 4-post test set on 25 labelled rows, and all 25 rows were pre-labelled by
