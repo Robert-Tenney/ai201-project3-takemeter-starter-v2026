@@ -405,15 +405,16 @@ model with no idea is near 0.25, so these guesses are close to uniform.
 
 ### Criteria table
 
-Verdicts are Milestone 4. I am leaving this table for that milestone.
+Targets are the originals from `criteria.md`, unchanged. Values are from
+`results_three_seeds_before.json`.
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. Overall accuracy | >= 0.60 on every seed | 0.500 | 0.250 | 0.500 | MISSED |
+| 2. Every label F1 (`analysis` >= 0.40, others >= 0.50) | all labels, every seed | `analysis` 0.000, `hot_take` 0.667, `request` 0.000, `experience` 0.000 | `analysis` 0.000, `hot_take` 0.500, `request` 0.000, `experience` 0.000 | `analysis` 0.000, `hot_take` 0.667, `request` 0.000, `experience` 0.000 | MISSED |
+| 3. No label > 60% of `labels.csv`; smallest label >= 25 examples | both parts | largest 44%, smallest 4 | same (a property of `labels.csv`, not of a seed) | same | MISSED |
+| 4. Agreement with staff >= 70% (21 of 30) | one set of 30 posts | not seed-based | not seed-based | not seed-based | <MET or MISSED, from `agreement.py`> |
+| 5. Recall on `analysis` >= 0.50 on every seed | every seed | 0.000 | 0.000 | 0.000 | MISSED |
 
 ### Confusion matrix
 
@@ -442,23 +443,98 @@ still never predicted `analysis` or `request`.
 
 | # | Criterion | Target | Verdict | How I decided |
 |---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| 1 | Overall accuracy | >= 0.60 on every seed | MISSED | 0.500, 0.250, 0.500. All three are under 0.60, and the target had to hold on every seed. |
+| 2 | Every label F1 | >= 0.50 each, `analysis` >= 0.40, every seed | MISSED | Three of four labels scored 0.000 on all three seeds. Only `hot_take` was above 0 (0.667, 0.500, 0.667), and it met its 0.50 line on every seed. See the note below. |
+| 3 | Label balance | no label > 60%; smallest >= 25 | MISSED | The largest label is `hot_take` at 44%, which passes. The smallest label is `request` with 4 examples, far under 25, so the second part fails. |
+| 4 | Agreement with staff | >= 70% (21 of 30) | <MET or MISSED> | <rate from `agreement.py`, compared with 21 of 30> |
+| 5 | Recall on `analysis` | >= 0.50 on every seed | MISSED | Recall was 0.000 on all three seeds. The model never predicted `analysis`. |
 
 **Diagnoses**
+
+**Criterion 2: note on `hot_take`.** On seed 7, `hot_take` F1 was 0.500, which
+meets the 0.50 line exactly. The criterion still fails because the other three
+labels scored 0.000. Separately, `request` had no posts in any test split, so
+its 0.000 is a placeholder from the scoring code and not a measurement of the
+model. This criterion could not be properly tested on this data. I am leaving
+the verdict as MISSED because the other two labels with test posts also scored
+0.000.
+
+**Criteria 1, 2 and 5: too few examples, and the model barely trained.**
+`labels.csv` has 25 rows. The notebook's 70/15/15 split gives about 17 train,
+4 validation and 4 test posts. Evidence:
+- The confusion matrix (seed 42) shows all 4 test posts predicted `hot_take`.
+  The `analysis` and `experience` posts both went there, and nothing was ever
+  predicted as `analysis` or `request`.
+- Average confidence was 0.29 to 0.33 on every seed, and the same on right and
+  wrong answers (seed 42: 0.296 vs 0.295). With four labels, a model with no
+  idea sits near 0.25, so its guesses were close to uniform.
+- With about 17 training rows and a batch size of 16, three epochs is about 6
+  training steps in total. That is not enough for the model to learn four
+  labels.
+- Accuracy swung 25 points between seeds (0.250 to 0.500), but each of the 4
+  test posts is worth 25 points, so that swing is one post. This is the
+  dataset being too small for a stable measure.
+
+I cannot separate "my labels are inconsistent" from "too little data" with
+this run. The agreement report is the evidence for that, and see below.
+
+**Criterion 3: too few examples, by my own plan.** My plan was 200 posts with
+`analysis` smallest at about 30. The real file has 25 rows, and the smallest
+label is `request` at 4, not `analysis`. This is the same cause as above:
+I collected 25 of the 200 rows I planned. Criterion 2's wording also assumes
+`analysis` is the smallest label, which is not true of the data I have. That
+is a mismatch between my plan and my data, not a broken criterion, so I am not
+revising it.
+
+**Criterion 4:** <Write after `agreement.py`. State the rate, which label pair
+caused most disagreements, and whether it is the `analysis` / `hot_take` pair
+that my baseline and my model both struggled with.>
+
+**Evidence from the baseline that bears on the boundary:** the zero-shot
+baseline called 10 of 11 `hot_take` posts `analysis` on the 25-post fallback
+run. That points at the `analysis` / `hot_take` boundary being hard to read
+from the definition alone, which fits my "hardest boundary" section. It is
+only one run on the fallback sample, so I treat it as a lead, not a finding.
+
+**Which criteria are broken rather than missed:** none. Every criterion was
+measurable and I got a number for each, so I have not revised any.
 
 ---
 
 ## Agreement Report
 
-**Agreement rate:** ___ / 30 = ___%
+**Staff taxonomy:** `analysis`, `hot_take`, `reaction`, applied under the
+definitions and decision rules in `data/staff_taxonomy.md` (not my own
+taxonomy). I labelled all 30 posts myself before seeing the staff labels, and
+committed `my_staff_labels.csv` before running `agreement.py`.
+
+**Agreement rate:** <N> / 30 = <NN>%
+
+My target in `criteria.md` (criterion 4) was at least 70% (21 of 30).
+<Met / Missed>.
 
 **Disagreements**
 
-**What the pattern in my disagreements tells me:**
+**1.** <first ~12 words of the post>...
+- Staff said `<label>`, I said `<label>`.
+- **My call:** <staff is right / I am right / split>, because <which numbered
+  rule (1 to 4) applies and what the post actually does under it>.
+- **Pile:** <(a) rule covered it, I applied it loosely / (b) rule doesn't say /
+  (c) rule ambiguous, my reading defensible>
+
+**2.** <repeat for every disagreement>
+
+**Counts by pile:** (a) <n>, (b) <n>, (c) <n>.
+
+**What the pattern in my disagreements tells me:** <Which label pair came up
+most? Is it the same boundary my confusion matrix struggled with? Say plainly
+what this can and cannot show.>
+
+**A limit on this check:** my own `labels.csv` rows were pre-labelled by
+Claude and none is marked `cold`, so I cannot compare this rate against my own
+cold labels as `criteria.md` planned. This check shows whether I can apply a
+written rule consistently. It does not show whether Claude's pre-labels on my
+25 rows are right.
 
 ---
 
