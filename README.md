@@ -301,22 +301,74 @@ labelled cold yourself, and whether any later rows were also pre-labelled.]
      Don't fill these in during unit 5.
      ═══════════════════════════════════════════════════════════════════ -->
 
----
-
 ## Baseline vs. Trained
+
+### Setup
+
+- **Baseline model:** `facebook/bart-large-mnli`, zero-shot, run locally on CPU
+  with `python baseline.py`. Its only input is the four definitions in
+  `label_definitions.txt`, copied from the Label Taxonomy section above. No
+  training, no examples.
+- **Scored on:** `test_split.csv`, the held-out split the notebook wrote in
+  unit 5. It has **4 posts** (2 `hot_take`, 1 `experience`, 1 `analysis`, 0
+  `request`), because `labels.csv` currently has only 25 rows. The baseline
+  and the trained model are scored on the same 4 posts, so the comparison is
+  like-for-like, but 4 posts is far too few to measure anything with. One
+  post is 25 points of accuracy.
+- **Trained model:** the unit 5 fine-tune (`distilbert-base-uncased`, seed 42,
+  CPU), numbers from `results.json`.
+- **Earlier run, not used:** my first baseline run happened before
+  `test_split.csv` existed, so it scored a random sample of all 25 rows
+  (accuracy 0.320). That run is not comparable with the trained model and is
+  not in the table below.
+
+### Prediction (written before I saw any Trained numbers)
+
+I predict the trained model will beat the baseline most on `hot_take`. My
+definition of it depends on what is absent (no support offered), which a
+zero-shot model reads poorly, and my training data shows what unsupported
+claims actually look like. I expect the gap to be smallest on `request`,
+which has surface cues like questions and "can someone".
+
+### Results
 
 | Measure | Baseline | Trained | Difference |
 |---|---|---|---|
-| Overall accuracy |  |  |  |
-| Macro F1 |  |  |  |
-| F1 — `analysis` |  |  |  |
-| F1 — `hot_take` |  |  |  |
-| F1 — `request` |  |  |  |
-| F1 — `experience` |  |  |  |
+| Overall accuracy | 0.250 | 0.500 | +0.250 |
+| Macro F1 | 0.100 | 0.222 | +0.122 |
+| F1 — `analysis` | 0.400 | 0.000 | -0.400 |
+| F1 — `experience` | 0.000 | 0.000 | +0.000 |
+| F1 — `hot_take` | 0.000 | 0.667 | +0.667 |
+| F1 — `request` | 0.000 | 0.000 | +0.000 |
 
-**What I predicted before I looked:**
+Posts per label in the held-out set: `analysis` 1, `experience` 1,
+`hot_take` 2, `request` 0.
 
-**What the gap actually means:**
+### What the gap means
+
+On accuracy and macro F1 the trained model is ahead, and the biggest gap is
+on `hot_take` (+0.667), which is where I predicted it. But the table
+overstates what happened. The trained model called all 4 posts `hot_take`
+(its confusion row shows the `experience` and `analysis` posts both going
+there), and `hot_take` is 2 of the 4 held-out posts, so its 0.500 accuracy is
+what always guessing the biggest label would score. The baseline did the
+mirror image: it called all 4 posts `analysis`, which got the one real
+`analysis` post right and nothing else. So neither model separated the
+labels on this set, and the gap shows which single label each one defaulted
+to, not that training taught the model anything. `request` has no posts in
+the held-out set, so its row says nothing about the model, and my "smallest
+gap on `request`" prediction cannot be checked.
+
+The real finding is the size of the data. With 25 labelled rows, the
+held-out set is 4 posts, and no comparison on it can be trusted. I need
+`labels.csv` at 150 to 200 rows, then a retrain and a rerun of the baseline
+on the new `test_split.csv`, before this table means anything.
+
+### What my definitions were worth
+
+Not measured yet. Command: `python baseline.py --definitions nonexistent.txt
+--out baseline_bare.json`. Bare-names accuracy: <x.xxx>, against 0.250 with
+my definitions, so the definitions were worth <+/-x.xxx>.
 
 ---
 
