@@ -374,6 +374,39 @@ my definitions, so the definitions were worth <+/-x.xxx>.
 
 ## Run Log — Before
 
+### Three seeds, before any improvement
+
+Run from notebook section 6 with `RUN_LABEL = "before"`. Numbers are copied from
+`results_three_seeds_before.json`.
+
+**Device:** `cpu` (CPU), torch 2.14.1+cpu, `max_length` 128. Recorded in every
+row of the JSON file.
+
+| Seed | Test posts | Accuracy | Macro F1 | F1 `analysis` | F1 `hot_take` | F1 `request` | F1 `experience` | Recall `analysis` |
+|---|---|---|---|---|---|---|---|---|
+| 42 | 4 | 0.500 | 0.222 | 0.000 | 0.667 | 0.000 | 0.000 | 0.000 |
+| 7 | 4 | 0.250 | 0.167 | 0.000 | 0.500 | 0.000 | 0.000 | 0.000 |
+| 2024 | 4 | 0.500 | 0.222 | 0.000 | 0.667 | 0.000 | 0.000 | 0.000 |
+
+Every seed's test split has the same shape: 2 `hot_take`, 1 `analysis`,
+1 `experience`, 0 `request`. `request` has no test posts, so its F1 of 0.000
+is a placeholder from the scoring code, not a measurement.
+
+**Spread:** accuracy ranges from 0.250 to 0.500, a 25-point swing, well over
+the ten points the notebook warns about. With 4 test posts, one post is 25
+points, so the swing is a single post moving between right and wrong. That is a
+diagnosis in itself: `labels.csv` has 25 rows, which is too small for a stable
+measure.
+
+**Confidence (a second sign the model has barely learned):** the model's
+average confidence is 0.29 to 0.33 on every seed, and about the same on right
+and wrong answers (seed 42: 0.296 right, 0.295 wrong). With four labels, a
+model with no idea is near 0.25, so these guesses are close to uniform.
+
+### Criteria table
+
+Verdicts are Milestone 4. I am leaving this table for that milestone.
+
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
 | 1.  |  |  |  |  |  |
@@ -384,14 +417,24 @@ my definitions, so the definitions were worth <+/-x.xxx>.
 
 ### Confusion matrix
 
-| true \ predicted |  |  |  |  |
-|---|---|---|---|---|
-| **** |  |  |  |  |
-| **** |  |  |  |  |
-| **** |  |  |  |  |
-| **** |  |  |  |  |
+Seed 42 (the matrix section 7 prints). Rows are true labels, columns are the
+model's guesses.
 
-**My biggest off-diagonal number, and what it means:**
+| true \ predicted | analysis | hot_take | request | experience |
+|---|---|---|---|---|
+| **analysis** | 0 | 1 | 0 | 0 |
+| **hot_take** | 0 | 2 | 0 | 0 |
+| **request** | 0 | 0 | 0 | 0 |
+| **experience** | 0 | 1 | 0 | 0 |
+
+**My biggest off-diagonal number, and what it means:** The largest wrong cell
+is 1, tied between `analysis` called `hot_take` and `experience` called
+`hot_take`, so there is no single biggest confusion. What the matrix does show
+is that the model called all 4 posts `hot_take`: its whole `hot_take` column is
+full and every other column is empty. That is a model defaulting to the biggest
+label, not learning the `analysis`/`hot_take` boundary. Seed 7 differs (one
+`hot_take` post and the `analysis` post both went to `experience`), but it
+still never predicted `analysis` or `request`.
 
 ---
 
