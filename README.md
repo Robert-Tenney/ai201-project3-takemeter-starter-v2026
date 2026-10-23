@@ -294,28 +294,6 @@ of the result.
   its judgment; I am treating them as pre-labels to read and correct, not as
   final.
 
-**Moment 3 (unit 6)**
-
-- *What I asked for:* Help working through the unit 6 milestones: running the
-  baseline, reading my three-seed results and confusion matrix, drafting the
-  README sections, and writing the verdicts and diagnoses.
-- *What came back:* Claude drafted the README text for Baseline vs. Trained, the
-  Run Log, and the Verdicts and Diagnoses sections from my uploaded result
-  files. It also computed the baseline's score on my 4 held-out posts from the
-  baseline predictions it had already saved, and pointed out that my 25-row
-  dataset, not my training settings, explained most of my misses. It declined to
-  label the 30 staff posts for me.
-- *What I changed:* <YOU FILL IN: which sentences you rewrote, which numbers you
-  checked against the JSON files yourself, what you disagreed with, and whether
-  you kept or changed the "EPOCHS 3 to 15" choice.>
-- *What I did myself:* <YOU FILL IN: confirm you labelled the 30 staff posts
-  yourself before seeing the staff labels, and wrote the adjudication of each
-  disagreement.>
-
-**Pre-labelling disclosure:** The 25 rows currently in `labels.csv` were
-pre-labelled by Claude from posts I pasted, and each says so in the note
-column. No row is marked `cold`, so none of the 25 was labelled unaided, and
-no later rows were added. <YOU FILL IN: how many you changed after reading.>
 
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
@@ -610,48 +588,63 @@ have, not how long I trained. If accuracy rises but only because the model now
 memorises its 17 training rows, the validation numbers and the confusion matrix
 should show that.
 
-**How I ran it:** In the notebook I set `EPOCHS = 15`, re-ran section 2 to pick
-up the change, set `RUN_LABEL = "after"` in section 6, and ran section 6 once.
-It wrote `results_three_seeds_after.json`. `results_three_seeds_before.json` is
-untouched.
+**How I ran it:** I changed `EPOCHS` from 3 to 15 in the notebook's settings
+cell (section 2), set `RUN_LABEL = "after"` in section 6, and ran section 6. It
+wrote `results_three_seeds_after.json`. `results_three_seeds_before.json` is
+untouched. I ran section 6 twice, and both runs wrote the same numbers.
+
+**What went wrong with the test:** the after file is identical to the before
+file. All three seeds match on accuracy, every per-label F1, the confusion
+matrices and the confidence values (for example seed 42 mean confidence when
+right is 0.29601359367370605 in both). The notebook is deterministic for a given
+seed and settings, and 15 epochs would have changed those numbers, so these
+results are what 3 epochs produces. I could not confirm that `EPOCHS = 15` was
+in effect when section 6 ran. Section 6 reads `EPOCHS` from the kernel's
+memory, so editing the value without re-running the settings cell would leave it
+at 3. <YOU FILL IN: what you did to check, for example the settings line the
+notebook printed (`... 15 epochs ...` or `... 3 epochs ...`).>
 
 ### Run Log — After
 
-Numbers are from `results_three_seeds_after.json`. Device: <cpu, from the JSON>.
+Numbers are from `results_three_seeds_after.json`. Device: `cpu`, torch
+2.14.1+cpu.
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
 |---|---|---|---|---|---|
-| 1. Overall accuracy | >= 0.60 on every seed | <x.xxx> | <x.xxx> | <x.xxx> | <MET / MISSED> |
-| 2. Every label F1 (`analysis` >= 0.40, others >= 0.50) | all labels, every seed | <four F1s> | <four F1s> | <four F1s> | <MET / MISSED> |
+| 1. Overall accuracy | >= 0.60 on every seed | 0.500 | 0.250 | 0.500 | MISSED |
+| 2. Every label F1 (`analysis` >= 0.40, others >= 0.50) | all labels, every seed | `analysis` 0.000, `hot_take` 0.667, `request` 0.000, `experience` 0.000 | `analysis` 0.000, `hot_take` 0.500, `request` 0.000, `experience` 0.000 | `analysis` 0.000, `hot_take` 0.667, `request` 0.000, `experience` 0.000 | MISSED |
 | 3. No label > 60%; smallest >= 25 | both parts | largest 44%, smallest 4 | same | same | MISSED (unchanged, a property of `labels.csv`) |
 | 4. Agreement with staff >= 70% | one set of 30 posts | 30 of 30 (100%) | not seed-based | not seed-based | MET (unchanged) |
-| 5. Recall on `analysis` >= 0.50 on every seed | every seed | <x.xxx> | <x.xxx> | <x.xxx> | <MET / MISSED> |
+| 5. Recall on `analysis` >= 0.50 on every seed | every seed | 0.000 | 0.000 | 0.000 | MISSED |
 
 ### Before and after, side by side
 
 | Measure | Before: 42 / 7 / 2024 | After: 42 / 7 / 2024 |
 |---|---|---|
-| Accuracy | 0.500 / 0.250 / 0.500 | <x / x / x> |
-| Macro F1 | 0.222 / 0.167 / 0.222 | <x / x / x> |
-| Mean confidence when right (seed 42) | 0.296 | <x.xxx> |
-| Recall `analysis` | 0.000 / 0.000 / 0.000 | <x / x / x> |
+| Accuracy | 0.500 / 0.250 / 0.500 | 0.500 / 0.250 / 0.500 |
+| Macro F1 | 0.222 / 0.167 / 0.222 | 0.222 / 0.167 / 0.222 |
+| Mean confidence when right (seed 42) | 0.296 | 0.296 |
+| Recall `analysis` | 0.000 / 0.000 / 0.000 | 0.000 / 0.000 / 0.000 |
 
-**Did it help, and how do I know:** <One sentence first: yes, no, or mixed.
-Then the evidence: which numbers moved, whether the seeds still disagree, and
-whether the after confusion matrix still shows every post going to one label.
-With 4 test posts, one post is 25 points of accuracy, so say whether the change
-is bigger than that. If it did not help, say so. That is a complete result.>
+**Did it help, and how do I know:** No, and it also was not a valid test. Every
+number is the same as before, which means the change did not take effect, not
+that training for longer does nothing. So I have no evidence either way on
+whether more epochs would help. My diagnosis (about 6 training steps on 17 rows,
+confidence near 0.25) still points at training, and the next step would be to
+confirm the settings cell printed `15 epochs`, re-run section 6, and compare. I
+stopped here because I ran out of time to find why the setting did not apply.
+<Edit if that is not the reason.>
 
 ---
 
 ## What's Still Broken
 
-Four of my five criteria are missed in the before run, and criterion 4 is met.
-For each one: what I would do, and why I stopped. The "After the change" line on
-criteria 1, 2 and 5 is for the result of the `EPOCHS` 3 to 15 re-run.
+Four of my five criteria are missed and criterion 4 is met, in both the before
+and the after run (the two runs are identical). For each one: what I would do,
+and why I stopped.
 
 **Criterion 1 (accuracy >= 0.60 every seed):** Missed before (0.500, 0.250,
-0.500). *After the change:* <MET or MISSED, with the three accuracies.> What I
+0.500). *After the change:* Missed (0.500, 0.250, 0.500, identical to before, so the change did not apply). What I
 would do next: label more rows. The measure is a 4-post test set, where one post
 is 25 points, so no training change can make this number stable. I stopped
 because labelling 150 to 200 rows by hand, with care, did not fit this unit, and
@@ -659,7 +652,7 @@ it would also have changed `test_split.csv` and broken the like-for-like
 comparison with my baseline.
 
 **Criterion 2 (every label F1):** Missed before (three labels at 0.000 on every
-seed). *After the change:* <MET or MISSED, with the four F1s per seed.> What I
+seed). *After the change:* Missed, identical to before (three labels at 0.000 on every seed). What I
 would do next: add `request` examples first, because it is my thinnest label.
 `request` has no posts in the test split, so its F1 cannot be measured until it
 has more examples (it has 4 in `labels.csv`). I stopped for the same reason as
@@ -675,7 +668,7 @@ fix here. The check does not cover my 25 pre-labelled rows, which is the part I
 would audit next.
 
 **Criterion 5 (recall on `analysis` >= 0.50 every seed):** Missed before (0.000
-on every seed). *After the change:* <MET or MISSED, with the three recalls.>
+on every seed). *After the change:* Missed (0.000 on every seed, identical to before).
 What I would do next: my baseline called 10 of 11 `hot_take` posts `analysis`,
 and my model never predicted `analysis`, so the two models fail that boundary in
 opposite directions. My staff check showed I can apply a written `analysis` /
@@ -690,8 +683,8 @@ checkable fact, `hot_take` a claim with nothing behind it, `request` something a
 reply could supply, and `experience` the writer's own situation. In the before
 run the seed 42 confusion matrix shows the model called all 4 test posts
 `hot_take`, the biggest label, so it learned the shape of my data and not these
-four ideas. *After the change:* <say whether the after-run matrix still puts
-every post in one column or spreads predictions across labels.>
+four ideas. *After the change:* the after-run matrix is the same as the before one, so
+this still holds, but I could not test whether more training would change it.
 
 **Anything I would not trust in these results:** every number comes from a
 4-post test set on 25 labelled rows, and all 25 rows were pre-labelled by
