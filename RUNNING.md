@@ -1,10 +1,78 @@
 # Running TakeMeter
 
-Everything about how the starter works.
+Everything about how the starter works. The capstone run path is the first
+section below.
 
 This pair is different from the last two: **you train a model.** It runs on
 your own machine, in a notebook, from inside this repo. No accounts, no keys,
 nothing hosted.
+
+---
+
+## Capstone: the gated run (Path B, local with logs)
+
+This is the run path for the capstone extension. It runs on your own machine,
+started by one command, and every run leaves a record in `run_log.jsonl`.
+
+```bash
+python run.py
+```
+
+Run it from the repo root with the `.venv` active. One run validates
+`labels.csv` through `guard.py`, then splits, fine-tunes and scores exactly as
+the notebook does (seed 42, 3 epochs), then appends one structured record to
+`run_log.jsonl`.
+
+### Other commands
+
+| Command | What it does |
+|---|---|
+| `python run.py` | One gated run on `labels.csv`, seed 42 |
+| `python run.py --runs 10` | Ten runs, then prints the mean, min and max seconds. This is how the cost number is measured |
+| `python run.py --data bad.csv` | The failure path. A bad file is refused with a named reason and still logged |
+| `python validate.py` | The gate on its own, with no training. Exit code 0 passes, 1 refuses |
+| `python test_guard.py` | Checks that each kind of bad input is refused with the right code |
+
+Exit codes for `run.py`: `0` ran, `1` refused by the gate, `2` crashed. Both
+failures write a record, so a failed run never shows up only as an absence.
+
+### What the environment needs
+
+| Need | Detail |
+|---|---|
+| Python | 3.11, 3.12 or 3.13. Not 3.14 |
+| Packages | Pinned in `requirements.txt`: pandas, transformers, datasets, accelerate, torch, scikit-learn. Install with `pip install -r requirements.txt` |
+| Model file | `distilbert-base-uncased`, about 270 MB. It downloads on the first run into `~/.cache/huggingface`. After that, runs work offline |
+| Disk | About 9 GB free, as in the setup section below |
+| Memory | About 6 GB. Training peaks around 2.1 GB |
+| Hardware | CPU is fine. The notebook's training step took about 4 to 5 seconds per seed on CPU |
+
+### Test it from a clean checkout
+
+```bash
+git clone <your repo URL> takemeter-clean
+cd takemeter-clean
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python test.py
+python run.py
+```
+
+`python run.py` should print one `OK` line with an accuracy and macro F1, then
+`(appended to run_log.jsonl)`. If a step fails, whatever was missing from these
+instructions is what a reader would have hit.
+
+### What gets written
+
+| File | What's in it |
+|---|---|
+| `run_log.jsonl` | One JSON line per run: `timestamp`, `input` (data file, seed, labels, rows), `output` (status, code, message, and on success accuracy, macro F1, test size, device), `duration_ms`, and `stages_ms` |
+| `guard_log.jsonl` | One JSON line per gate check: `timestamp`, `input`, `output`, `duration_ms`, plus any warnings |
+
+`run.py` does not write `results.json`, `test_split.csv` or the three-seed
+files, so it cannot overwrite the notebook's evidence. Both log files are meant
+to be committed.
 
 ---
 
