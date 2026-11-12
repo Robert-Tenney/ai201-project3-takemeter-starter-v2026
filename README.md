@@ -696,3 +696,39 @@ right.
 ---
 
 📖 **How to run this project: [RUNNING.md](RUNNING.md)**
+
+---
+
+## Capstone
+
+**The System**
+
+TakeMeter, project 3 in this repo. It sorts r/touhou text into `analysis`,
+`hot_take`, `request` and `experience`. The path I am extending is
+`labels.csv` -> stratified 70/15/15 split -> fine-tuned
+`distilbert-base-uncased` -> `results.json`. I am extending this same
+repository, not a copy, so the extension sits next to the original work.
+
+**The Shape**
+
+Shape B, harden against failure. TakeMeter works when its input is clean, and
+several of its failures are silent. Today `check_dataset` in the notebook
+prints `[FIX ME]` lines, but the next cell trains anyway. `split_dataset`
+quietly drops stratification when a label has fewer than 2 rows. A missing
+file or column ends in a raw traceback. I am adding one failure-handling layer
+in front of training: a validation gate (`guard.py`, called before the split)
+that checks the file, the columns, empty text, labels not in `LABELS`,
+duplicates, and rows per label. It either passes or stops with a one-line,
+named reason. Every refusal and every pass writes a structured log record.
+When I am finished I will claim two things: bad input is refused with a clear
+reason and a log entry, and good input still trains exactly as it did before.
+
+**What's Out of Scope**
+
+- Collecting or relabelling more rows. `labels.csv` is too small, but that is
+  the project 3 problem, not this unit's extension.
+- Changing the model, the training settings or `EPOCHS`.
+- Saving the model or adding a predict/serving endpoint. That would be Shape C.
+- Touching `baseline.py` or `agreement.py`, including baseline's silent
+  fallback to a random sample when `test_split.csv` is missing.
+- Hosting it. I plan to run it locally (Path B).
