@@ -732,3 +732,53 @@ reason and a log entry, and good input still trains exactly as it did before.
 - Touching `baseline.py` or `agreement.py`, including baseline's silent
   fallback to a random sample when `test_split.csv` is missing.
 - Hosting it. I plan to run it locally (Path B).
+
+**The Run Path**
+
+Path B, local with logs. The start command is `python run.py`, documented in
+`RUNNING.md` with the environment it needs. I chose Path B because the system
+carries a local model (`distilbert-base-uncased`, about 270 MB), which does not
+fit on a free 512 MB host. `run.py` is new in this unit. It runs the gate, then
+the same split, training settings and scoring as the notebook, then writes one
+log record. [YOU CONFIRM: that you cloned the repo into a new folder and
+followed `RUNNING.md` from the top. Write what was missing the first time.]
+
+**Instrumentation**
+
+Every run appends one JSON line to `run_log.jsonl` with named fields:
+`timestamp`, `input` (data file, seed, labels, rows), `output` (status, code,
+message, and on success accuracy, macro F1, test size and device),
+`duration_ms` and `stages_ms`. The gate also writes its own line to
+`guard_log.jsonl` for every check. Refused and crashed runs leave records too.
+
+Ten successful runs, from `python run.py --runs 10`, then
+`tail -n 10 run_log.jsonl`:
+
+```
+[PASTE THE TEN REAL LINES HERE. Do not edit them.]
+```
+
+One failed run, from `python run.py --data nope.csv`, then
+`tail -n 1 run_log.jsonl`:
+
+```
+[PASTE THE REAL REFUSED LINE HERE. Expect status "refused" and code "file_missing".]
+```
+
+[ADD ONE SENTENCE: say whether the ten entries agree with each other on
+accuracy and macro F1, and whether any run differed.]
+
+**What It Costs**
+
+This system calls no hosted API, so there is no spend per run. The real cost is
+compute time, and I measured that instead of estimating it. I ran
+`python run.py --runs 10` on the device below, which logged `duration_ms` for
+each run, and took the mean of the ten.
+
+| Measure | Value |
+|---|---|
+| Device | [FROM THE RUN LOG: `device` field, for example `cpu`] |
+| Mean seconds per run | [FROM THE OUTPUT OF `--runs 10`] |
+| Min / max seconds | [FROM THE SAME OUTPUT] |
+
+[Milestone 7 adds the hundred-people-a-day sentence with the arithmetic.]
