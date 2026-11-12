@@ -740,8 +740,9 @@ Path B, local with logs. The start command is `python run.py`, documented in
 carries a local model (`distilbert-base-uncased`, about 270 MB), which does not
 fit on a free 512 MB host. `run.py` is new in this unit. It runs the gate, then
 the same split, training settings and scoring as the notebook, then writes one
-log record. [YOU CONFIRM: that you cloned the repo into a new folder and
-followed `RUNNING.md` from the top. Write what was missing the first time.]
+log record. I tested the instructions on myself: I cloned the repo into a new
+folder and followed `RUNNING.md` from the top. It worked the first time, and
+nothing was missing from the instructions.
 
 **Instrumentation**
 
@@ -751,34 +752,62 @@ message, and on success accuracy, macro F1, test size and device),
 `duration_ms` and `stages_ms`. The gate also writes its own line to
 `guard_log.jsonl` for every check. Refused and crashed runs leave records too.
 
-Ten successful runs, from `python run.py --runs 10`, then
-`tail -n 10 run_log.jsonl`:
+Ten successful runs, from `python run.py --runs 10`, copied unedited from
+`run_log.jsonl`:
 
-```
-[PASTE THE TEN REAL LINES HERE. Do not edit them.]
+```jsonl
+{"run": 1, "timestamp": "2026-11-12T21:06:14+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 18077.9, "stages_ms": {"validate": 361.9, "train_and_score": 17716.0}}
+{"run": 2, "timestamp": "2026-11-12T21:06:32+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5697.6, "stages_ms": {"validate": 4.4, "train_and_score": 5693.2}}
+{"run": 3, "timestamp": "2026-11-12T21:06:37+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5880.5, "stages_ms": {"validate": 3.5, "train_and_score": 5877.0}}
+{"run": 4, "timestamp": "2026-11-12T21:06:43+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5944.8, "stages_ms": {"validate": 3.7, "train_and_score": 5941.0}}
+{"run": 5, "timestamp": "2026-11-12T21:06:49+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5553.6, "stages_ms": {"validate": 3.5, "train_and_score": 5550.0}}
+{"run": 6, "timestamp": "2026-11-12T21:06:55+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5542.6, "stages_ms": {"validate": 3.4, "train_and_score": 5539.1}}
+{"run": 7, "timestamp": "2026-11-12T21:07:00+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5610.0, "stages_ms": {"validate": 3.3, "train_and_score": 5606.7}}
+{"run": 8, "timestamp": "2026-11-12T21:07:06+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5566.9, "stages_ms": {"validate": 3.4, "train_and_score": 5563.4}}
+{"run": 9, "timestamp": "2026-11-12T21:07:12+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5651.9, "stages_ms": {"validate": 3.5, "train_and_score": 5648.3}}
+{"run": 10, "timestamp": "2026-11-12T21:07:17+00:00", "input": {"data": "labels.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128, "rows": 25}, "output": {"status": "ok", "code": null, "message": "trained and scored", "accuracy": 0.5, "f1_macro": 0.2222, "n_train": 17, "n_test": 4, "device": "cpu"}, "duration_ms": 5696.5, "stages_ms": {"validate": 3.6, "train_and_score": 5692.9}}
 ```
 
-One failed run, from `python run.py --data nope.csv`, then
-`tail -n 1 run_log.jsonl`:
+One failed run, from `python run.py --data nope.csv`, copied unedited. It was
+refused by the gate and still left a record. The `run` field is 1 because it
+was its own invocation:
 
-```
-[PASTE THE REAL REFUSED LINE HERE. Expect status "refused" and code "file_missing".]
+```jsonl
+{"run": 1, "timestamp": "2026-11-12T21:21:21+00:00", "input": {"data": "nope.csv", "seed": 42, "labels": ["request", "experience", "hot_take", "analysis"], "epochs": 3, "max_length": 128}, "output": {"status": "refused", "code": "file_missing", "message": "No file at nope.csv."}, "duration_ms": 350.9, "stages_ms": {}}
 ```
 
-[ADD ONE SENTENCE: say whether the ten entries agree with each other on
-accuracy and macro F1, and whether any run differed.]
+All ten runs agree on the result: accuracy 0.5 and macro F1 0.2222 every time,
+with 17 training posts and 4 test posts. That matches `results.json` from the
+notebook (accuracy 0.500, macro F1 0.222), so the gated script reproduces the
+original system and did not change it. Only the timing differed. Run 1 took
+18,078 ms and runs 2 to 10 took between 5,543 and 5,945 ms. In run 1 the
+`validate` stage took 361.9 ms against about 3.5 ms in later runs, and
+`train_and_score` took 17,716 ms against about 5,600 ms. I did not measure why,
+but this is the first run in a fresh process, so the likely cause is one-time
+work such as loading libraries and the model, which later runs in the same
+process reuse. That is a guess, not a finding.
 
 **What It Costs**
 
 This system calls no hosted API, so there is no spend per run. The real cost is
 compute time, and I measured that instead of estimating it. I ran
 `python run.py --runs 10` on the device below, which logged `duration_ms` for
-each run, and took the mean of the ten.
+each run, and took the mean of the ten. I also checked the mean in PowerShell
+with `Measure-Object -Average -Minimum -Maximum` on the `duration_ms` values,
+and it gave the same 6,922 ms.
 
 | Measure | Value |
 |---|---|
-| Device | [FROM THE RUN LOG: `device` field, for example `cpu`] |
-| Mean seconds per run | [FROM THE OUTPUT OF `--runs 10`] |
-| Min / max seconds | [FROM THE SAME OUTPUT] |
+| Device | `cpu` (the `device` field in the run log) |
+| Mean seconds per run, all ten runs | 6.92 s (6,922 ms) |
+| Mean seconds per run, runs 2 to 10 only | 5.68 s (5,683 ms) |
+| Min / max seconds | 5.54 s (run 6) / 18.08 s (run 1) |
+| Cost in dollars | $0.00, no hosted API is called |
+
+The mean of all ten is the cost number I am reporting, because run 1 is a real
+run that a person starting the script would pay for. The 5.68 s figure is what
+a repeat run costs once the process is warm, so it is the number to use for
+back-to-back runs. Run 1 is about three times slower than the rest, which pulls
+the mean up by about 1.2 s.
 
 [Milestone 7 adds the hundred-people-a-day sentence with the arithmetic.]
