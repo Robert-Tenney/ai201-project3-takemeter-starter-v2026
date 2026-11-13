@@ -811,3 +811,147 @@ back-to-back runs. Run 1 is about three times slower than the rest, which pulls
 the mean up by about 1.2 s.
 
 [Milestone 7 adds the hundred-people-a-day sentence with the arithmetic.]
+
+**Run Log**
+
+Five criteria from `criteria.md`, three separate trials each, nothing changed
+between trials. Each trial is one invocation of `python capstone_test.py
+--trial N`. The measurements and how I read each criterion are written at the
+top of `capstone_test.py`, which was committed before any trial was run. The
+table below is the output of `python capstone_test.py --report`. Real output
+from every trial is in `capstone_results/`.
+
+Device: `cpu`, the same machine as the Milestone 3 run log. Each trial's
+`timing/run_log.jsonl` records the `device` field, and
+`capstone_results/trial_1/summary.json` records the Python version and platform.
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. At least 75% of 100 bad inputs blocked | >= 75 of 100 | 88/100 | 88/100 | 88/100 | MET |
+| 2. Every bad-input run logged, completely | 100 of 100 complete, none missing | 100/100 complete, 100 records | 100/100 complete, 100 records | 100/100 complete, 100 records | MET |
+| 3. Original still works (seed 42, vs results.json) | accuracy 0.5, macro F1 0.2222 | acc 0.5, F1 0.2222 | acc 0.5, F1 0.2222 | acc 0.5, F1 0.2222 | MET |
+| 4. At least 90% of 100 good inputs pass | >= 90 of 100 | 100/100 | 100/100 | 100/100 | MET |
+| 5. Run 1 <= 8 s and runs 2-10 <= 2 s | all of runs 2-10 under 2.0 s | first 17.33s, rest max 5.47s | first 17.29s, rest max 5.12s | first 16.71s, rest max 5.82s | MISSED |
+
+How I read the criteria that had no number or definition. These were chosen
+before running, and are written in `capstone_test.py`:
+
+- Criterion 1: "blocked" means the run finished with status `refused`. A file
+  that gets past the gate does not count, even if it later crashes.
+- Criterion 2: "properly logged" means exactly one complete record per input in
+  `run_log.jsonl` (timestamp, input, output with a status and message, a code on
+  every refused or errored run, and `duration_ms`), and one record per input in
+  `guard_log.jsonl`.
+- Criterion 3: "still works" means the gate returns the DataFrame unchanged, and
+  `python run.py` on `labels.csv` at seed 42 reproduces the notebook's
+  `results.json` (accuracy 0.5, macro F1 0.2222, 4 test posts).
+- Criterion 5: I used the upper end of each range in the criterion as the
+  threshold. Run 1 at 8 seconds or less, and every one of runs 2 to 10 at 2
+  seconds or less, in one process.
+
+What the 100 bad and 100 good inputs were. 84 of the bad inputs are kinds the
+gate checks for (missing file, empty file, wrong columns, header only, blank
+text, blank label, unknown label, duplicates, a label with fewer than 3 rows,
+one label over 70%, an unreadable file). 16 are kinds it has no check for on
+purpose, so the 75% target could be missed: 6 near-duplicates that differ only
+by case, 6 posts that are only punctuation, and 4 paths that are folders.
+The 100 good inputs are 10 kinds, 10 files each: plain, Windows line endings,
+a byte-order mark, commas and line breaks inside a post, non-English text, an
+extra column, columns in the other order, very long posts, the smallest valid
+file (12 rows) and a large file (300 rows). All files are generated per trial
+from a seed, so each trial gets different files with the same mix.
+
+Real output from trial 1, copied from `python capstone_test.py --report`. The
+file and function that produced each part are named above it.
+
+Criterion 1, from `run.py` `run_once` and `guard.py` `validate_dataset`. Columns
+are the kind of bad input, whether the gate has a check for it, blocked out of
+attempted, the refusal codes, and every status seen:
+
+```
+  file_missing             yes  8/8   {'file_missing': 8}   {'refused': 8}
+  file_empty               yes  8/8   {'file_empty': 8}   {'refused': 8}
+  columns_missing          yes  8/8   {'columns_missing': 8}   {'refused': 8}
+  no_rows                  yes  8/8   {'no_rows': 8}   {'refused': 8}
+  empty_text               yes  8/8   {'empty_text': 8}   {'refused': 8}
+  label_blank              yes  8/8   {'label_blank': 8}   {'refused': 8}
+  label_unknown            yes  8/8   {'label_unknown': 8}   {'refused': 8}
+  duplicates               yes  8/8   {'duplicates': 8}   {'refused': 8}
+  label_too_thin           yes  8/8   {'label_too_thin': 8}   {'refused': 8}
+  label_dominant           yes  8/8   {'label_dominant': 8}   {'refused': 8}
+  file_unreadable          yes  4/4   {'file_unreadable': 4}   {'refused': 4}
+  near_duplicates          NO   0/6   {}   {'ok': 6}
+  punctuation_only_text    NO   0/6   {}   {'ok': 6}
+  directory_not_file       NO   4/4   {'file_empty': 4}   {'refused': 4}
+  blocked 88 of 100; 0 of those refused as 'unexpected'
+```
+
+Criterion 2, from `run.py` `run_once` (`run_log.jsonl` and `guard_log.jsonl`):
+
+```
+{'attempted': 100, 'run_log_records': 100, 'run_log_unreadable_lines': 0, 'complete_records': 100, 'guard_log_records': 100, 'guard_log_unreadable_lines': 0, 'every_input_logged_once': True}
+```
+
+Criterion 3, from `run.py` `train_and_score` and `results.json`:
+
+```
+{
+  "reference_results_json": {
+    "accuracy": 0.5,
+    "f1_macro": 0.2222,
+    "n_test": 4
+  },
+  "run_py_result": {
+    "status": "ok",
+    "accuracy": 0.5,
+    "f1_macro": 0.2222,
+    "n_test": 4,
+    "n_train": 17,
+    "message": "trained and scored"
+  },
+  "gate_returns_frame_unchanged": true,
+  "run_py_exit_code": 0,
+  "run_py_matches_results_json": true
+}
+```
+
+Criterion 4, from `guard.py` `validate_dataset`. Passed out of 10 for each kind:
+
+```
+  plain                            10/10
+  crlf_line_endings                10/10
+  utf8_bom                         10/10
+  commas_quotes_newlines_in_text   10/10
+  unicode_text                     10/10
+  extra_column                     10/10
+  columns_in_other_order           10/10
+  very_long_text                   10/10
+  smallest_valid_file              10/10
+  large_file                       10/10
+```
+
+Criterion 5, from `run.py` `main` with `--runs 10`. Seconds per run, trial 1:
+
+```
+[17.33, 5.26, 5.27, 4.88, 5.47, 4.9, 4.84, 4.93, 5.03, 5.35]
+```
+
+Per-trial values, so the spread is visible:
+
+```
+trial 1: c1 88  c2 100  c3 0.5  c4 100  c5 [17.33, 5.26, 5.27, 4.88, 5.47, 4.9, 4.84, 4.93, 5.03, 5.35]
+trial 2: c1 88  c2 100  c3 0.5  c4 100  c5 [17.29, 5.05, 4.92, 4.61, 4.68, 5.03, 4.98, 5.12, 4.96, 5.1]
+trial 3: c1 88  c2 100  c3 0.5  c4 100  c5 [16.71, 4.94, 4.99, 4.8, 4.75, 5.13, 4.88, 5.38, 5.45, 5.82]
+```
+
+Two things in the output that the table does not show. The 12 near-duplicate and
+punctuation-only files were not blocked: all 12 passed the gate and went on to
+train, and each logged status `ok`. And the 4 folder paths were blocked, but with
+the code `file_empty`, because on this machine a folder reports a size of 0 bytes.
+The gate stopped them for the wrong stated reason.
+
+Criteria 1, 2, 3 and 4 gave identical numbers on all three trials. The gate is
+deterministic, so that is expected, and the trials differ only in the files they
+generated. Criterion 5 was the only one that varied between trials.
+
+[Verdicts are in the table. The diagnosis of each miss is Milestone 6.]
