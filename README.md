@@ -810,7 +810,20 @@ a repeat run costs once the process is warm, so it is the number to use for
 back-to-back runs. Run 1 is about three times slower than the rest, which pulls
 the mean up by about 1.2 s.
 
-[Milestone 7 adds the hundred-people-a-day sentence with the arithmetic.]
+For a hundred people a day, assuming each person starts one run: there is no
+dollar cost either way, because no hosted service is called, and the compute
+lands on each person's own machine. In compute time, a run started fresh costs
+about 17 s (the mean of run 1 across the three Milestone 5 trials, 17.33, 17.29
+and 16.71 s), so 100 x 17.11 s = 1,711 s, about 28.5 minutes of compute a day. A
+run inside an already-running process costs about 5 s (the mean of the 27 warm
+runs, 5.06 s), so 100 x 5.06 s = 506 s, about 8.4 minutes. People who start
+`python run.py` separately would each pay the 17 s case. The 6.92 s figure above
+is the mean of ten runs in one process, so it mixes one cold run with nine warm
+ones and understates what a person starting one run would see. Both multiplications
+use the before-improvement timings. After the improvement the cold run averaged
+16.57 s and the warm runs 4.55 s, so the same two multiplications give
+100 x 16.57 s = 1,657 s, about 27.6 minutes a day, and 100 x 4.55 s = 455 s, about
+7.6 minutes. That is a saving of about half a second a run.
 
 **Run Log**
 
@@ -1053,17 +1066,185 @@ has to be reverted.
 
 **Run Log After**
 
-[PASTE THE TABLE FROM `python capstone_test.py --report --label after` HERE. Do
-not edit the numbers.]
+Copied from `python capstone_test.py --report --label after`. The files are in
+`capstone_results_after/`.
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. At least 75% of 100 bad inputs blocked | >= 75 of 100 | 88/100 | 88/100 | 88/100 | MET |
+| 2. Every bad-input run logged, completely | 100 of 100 complete, none missing | 100/100 complete, 100 records | 100/100 complete, 100 records | 100/100 complete, 100 records | MET |
+| 3. Original still works (seed 42, vs results.json) | accuracy 0.5, macro F1 0.2222 | acc 0.5, F1 0.2222 | acc 0.5, F1 0.2222 | acc 0.5, F1 0.2222 | MET |
+| 4. At least 90% of 100 good inputs pass | >= 90 of 100 | 100/100 | 100/100 | 100/100 | MET |
+| 5. Run 1 <= 8 s and runs 2-10 <= 2 s | all of runs 2-10 under 2.0 s | first 16.82s, rest max 4.85s | first 16.44s, rest max 4.96s | first 16.46s, rest max 4.63s | MISSED |
+
+Criterion 5, seconds per run in each after trial (run 1 first):
+
+```
+trial 1: [16.82, 4.67, 4.44, 4.57, 4.7, 4.61, 4.57, 4.75, 4.85, 4.74]
+trial 2: [16.44, 4.42, 4.41, 4.16, 4.67, 4.38, 4.42, 4.45, 4.58, 4.96]
+trial 3: [16.46, 4.56, 4.42, 4.43, 4.38, 4.41, 4.55, 4.59, 4.63, 4.52]
+```
+
+Criteria 1, 2 and 4 printed the same output as the before run, including the 12
+bad inputs that got through and the 4 folders refused as `file_empty`.
 
 **Before and after, side by side**
 
-[PASTE THE TWO TABLES FROM `python capstone_test.py --compare` HERE. Do not edit
-the numbers.]
+Copied from `python capstone_test.py --compare`:
 
-**Did it help, and how do I know:** [WRITE THIS FROM THE REAL NUMBERS. Say whether
-run 1 and the warm runs got faster, and by how much, using the compare table. Say
-whether criterion 5 changed verdict. Say whether criterion 3 still matched
-`results.json`. Say whether `model_source` shows `cache` in the after logs. If it
-did not help, say that. If it helped but still missed, say how far it still is
-from 8 s and 2 s.]
+| Criterion | Target | Before: run 1 / 2 / 3 | After: run 1 / 2 / 3 | Before | After |
+|---|---|---|---|---|---|
+| 1. Bad inputs blocked | >= 75 of 100 | 88/100 / 88/100 / 88/100 | 88/100 / 88/100 / 88/100 | MET | MET |
+| 2. Bad-input runs logged completely | 100 of 100 | 100/100 complete, 100 records / 100/100 complete, 100 records / 100/100 complete, 100 records | 100/100 complete, 100 records / 100/100 complete, 100 records / 100/100 complete, 100 records | MET | MET |
+| 3. Original still works | acc 0.5, F1 0.2222 | acc 0.5, F1 0.2222 / acc 0.5, F1 0.2222 / acc 0.5, F1 0.2222 | acc 0.5, F1 0.2222 / acc 0.5, F1 0.2222 / acc 0.5, F1 0.2222 | MET | MET |
+| 4. Good inputs pass | >= 90 of 100 | 100/100 / 100/100 / 100/100 | 100/100 / 100/100 / 100/100 | MET | MET |
+| 5. Run 1 <= 8 s, runs 2-10 <= 2 s | see criteria.md | first 17.33s, rest max 5.47s / first 17.29s, rest max 5.12s / first 16.71s, rest max 5.82s | first 16.82s, rest max 4.85s / first 16.44s, rest max 4.96s / first 16.46s, rest max 4.63s | MISSED | MISSED |
+
+Seconds per run, criterion 5 (run 1 is cold, runs 2 to 10 are warm):
+
+| Trial | Before: run 1 | Before: runs 2-10 mean / max | After: run 1 | After: runs 2-10 mean / max |
+|---|---|---|---|---|
+| 1 | 17.33 s | 5.1 / 5.47 s | 16.82 s | 4.66 / 4.85 s |
+| 2 | 17.29 s | 4.94 / 5.12 s | 16.44 s | 4.49 / 4.96 s |
+| 3 | 16.71 s | 5.13 / 5.82 s | 16.46 s | 4.5 / 4.63 s |
+
+Trial 1, all ten runs:
+
+```
+before: [17.33, 5.26, 5.27, 4.88, 5.47, 4.9, 4.84, 4.93, 5.03, 5.35]
+after:  [16.82, 4.67, 4.44, 4.57, 4.7, 4.61, 4.57, 4.75, 4.85, 4.74]
+```
+
+**Did it help, and how do I know:** A little, and not enough to change a verdict.
+
+- **Run 1:** 17.33, 17.29 and 16.71 s before (mean 17.11 s), and 16.82, 16.44 and
+  16.46 s after (mean 16.57 s). That is about 0.5 s faster, or 3%.
+- **Warm runs:** the trial means were 5.10, 4.94 and 5.13 s before (27-run mean
+  5.06 s), and 4.66, 4.49 and 4.50 s after (27-run mean 4.55 s). That is about
+  0.5 s faster, or 10%.
+- **Criterion 5 is still MISSED.** Run 1 is still about 8.6 s over its 8 s limit.
+  All 27 warm runs are still over 2 s, and the fastest took 4.16 s.
+- **Criterion 3 still matched `results.json`** (accuracy 0.5, macro F1 0.2222) on
+  all three trials, so the change did not alter training. Criteria 1, 2 and 4
+  were identical to before.
+- **How sure I am:** all three trials were faster in both run 1 and the warm
+  runs, so the direction is consistent. But the before and after runs were made
+  at different times on the same machine, and a half second is about the size of
+  the differences between trials, so I treat this as a small gain and not a
+  proven one.
+- **My prediction held.** I wrote that run 1 would drop by up to a few seconds,
+  the warm runs by under a second, and criterion 5 would stay MISSED. Run 1 fell
+  by far less than the top of that range.
+- **What it says about my diagnosis:** the gap between run 1 and the warm runs was
+  12.05 s before (17.11 - 5.06) and 12.02 s after (16.57 - 4.55). The change took
+  about half a second off every run and left that gap alone. So the Hub checks
+  were a small part of the model load, and the 12 s is more likely the imports
+  and the first read of the model files than network time. I still did not time
+  those separately, so that is an inference.
+
+[CONFIRM: that `model_source` reads `cache` in the after logs. In PowerShell:
+`(Get-Content capstone_results_after\trial_1\timing\run_log.jsonl | Select-Object -First 1 | ConvertFrom-Json).output.model_source`.
+Write what it printed.]
+
+**What's Still Broken**
+
+**Criterion 5 (run 1 at 8 s or less, runs 2 to 10 at 2 s or less):** Missed
+before, on all three trials. Run 1 took 16.71 to 17.33 s, and the warm runs took
+4.61 to 5.82 s. *After the improvement:* Still missed, on all three trials. Run 1
+took 16.44 to 16.82 s, about 8.6 s over the limit on average, and the warm runs
+took 4.16 to 4.96 s, so every one of the 27 was over 2 s.
+
+What I would do next: stop retraining on every run. Save the fine-tuned model once
+and load it on later runs, so a run is a load and a scoring pass and not three
+epochs of training. I stopped because that is Shape C, and it is in my
+out-of-scope list: it adds a saved model and changes what "a run" means, and
+criterion 3 would then have to be reworded, because it checks that a run
+retrains to the same numbers. Shortening training instead would change `EPOCHS`,
+which is also out of scope, and would move the results criterion 3 protects. I
+also never measured how much of run 1's extra 12 s is imports and how much is
+reading the model, so the first thing I would add is stage timings inside
+`train_and_score`.
+
+**Criteria 1 to 4 were met, but two targets were set low.**
+
+- Criterion 4 was met at 100 of 100 against a target of 90. I would tighten it to
+  100 of 100, because a good file the gate refuses is a user who cannot train, and
+  I would widen the good set with kinds I did not try (for example a text column
+  of only numbers). [YOUR CALL: confirm or change.]
+- Criterion 1 was met at 88 of 100, but 4 of those were folders blocked by
+  accident, with the code `file_empty`, because a folder reports 0 bytes on this
+  machine. Without them it is 84. I would add a check for a path that is not a
+  file, then tighten the target to 90 of 100. [YOUR CALL: confirm or change.]
+
+**Gaps the criteria did not cover.** I found these while testing, and I did not
+fix them, because fixing them means more gate checks and the unit was spent on
+the run path, the tests and the write-up:
+
+- 12 of the 100 bad inputs got through the gate and trained: 6 near-duplicates that
+  differ only by case, and 6 posts that are only punctuation. These are the
+  bad inputs the gate exists to stop, and they trained without a warning.
+- Criterion 2 only tested a log file that can be written. In `run.py`,
+  `append_record` prints a warning and carries on if it cannot write, so a run on
+  a read-only folder would finish with no record. I did not test that case.
+- The real `labels.csv` passes the gate with two warnings (25 rows, and every
+  label under 20 rows). Warnings do not stop a run, so the gate says nothing
+  louder about a dataset that is far too small for the numbers to mean anything.
+  The earlier project's problems are unchanged: the model still trains on 25
+  rows and the test split still has 4 posts.
+
+I cut nothing from the extension. What I chose not to do is in What's Out of Scope.
+
+**What I Would Do Next**
+
+If this were real and I had another unit, I would add the two missing gate checks
+first, one that compares posts after lowercasing and trimming, and one that
+refuses a post made only of punctuation. They are the only bad inputs that reached
+training in my test, and the whole point of this extension was that they should
+not. [YOUR CALL: say a different first step if you would pick one, and why.]
+
+**How I Used AI**
+
+**Moment 1: the extension and the test harness**
+
+- *What I asked for:* I asked Claude to work out what Milestone 1 to 6 needed in
+  my repo, step by step, and to produce the finished files with commit commands.
+- *What came back:* Claude wrote `guard.py`, `validate.py`, `test_guard.py`,
+  `run.py`, `capstone_test.py`, the `RUNNING.md` section and the README sections
+  around them. The first version of `test_guard.py` failed one of its own 11
+  checks when Claude ran it, and Claude fixed the check before I used it.
+  Claude could not run the training here, so I ran every trial, the ten-run cost
+  measurement and the clean-checkout test myself, and pasted the real output.
+- *What I changed:* [YOU FILL IN: whether you read the code before running it, and
+  anything you edited. If you changed nothing, say that.]
+
+**Moment 2: my criteria**
+
+- *What I asked for:* I asked what criteria would work, and Claude would not write
+  them, because the unit says I should. It gave a table of what in my system could
+  be counted, and pointed at weak spots such as the log file that cannot be
+  written.
+- *What came back:* No criteria. After I wrote five, Claude ran each through the
+  three self-check questions without rewriting them and said that criteria 2 and 3
+  could not be scored from the sentence alone, that criteria 1 and 4 needed a set
+  size, and that the timing numbers in criterion 5 already failed against my own
+  logs.
+- *What I changed:* I wrote all five criteria and their reasons myself, and added
+  the set sizes of 100 to criteria 1 and 4 and the timing numbers to criterion 5.
+  I did not make criteria 2 and 3 measurable in the sentences, so I recorded
+  written definitions under them in `criteria.md` after the harness was written
+  and before any trial ran.
+
+**Moment 3: the diagnosis and the improvement**
+
+- *What I asked for:* I asked for the Milestone 6 files after my five criteria had
+  run three times.
+- *What came back:* Claude read the stage timings from my Milestone 3 log and
+  traced the criterion 5 miss to one stage, `train_and_score`, with two
+  mechanisms. It proposed one change, loading the model from the cache first, and
+  predicted in the README that the verdict would probably not change. Claude
+  could not measure the change, since it could not run the model.
+- *What I changed:* I ran the three after trials myself and pasted the report and
+  compare tables unedited. I checked that criterion 3 still gave accuracy 0.5 and
+  macro F1 0.2222, which showed the change had not altered training. The
+  prediction held: the change saved about half a second a run and criterion 5 was
+  still missed.
