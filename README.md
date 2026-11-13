@@ -954,4 +954,116 @@ Criteria 1, 2, 3 and 4 gave identical numbers on all three trials. The gate is
 deterministic, so that is expected, and the trials differ only in the files they
 generated. Criterion 5 was the only one that varied between trials.
 
-[Verdicts are in the table. The diagnosis of each miss is Milestone 6.]
+**Verdicts and Diagnoses**
+
+| # | Criterion | Target | Verdict | How I decided |
+|---|---|---|---|---|
+| 1 | Bad inputs blocked | >= 75 of 100 | MET | 88, 88 and 88 of 100 on the three trials. All 12 that were not blocked were kinds the gate has no check for. |
+| 2 | Every bad-input run logged completely | 100 of 100 complete, none missing | MET | 100 of 100 complete records on every trial, with 100 gate records and every input logged once. |
+| 3 | Original still works | accuracy 0.5, macro F1 0.2222 | MET | Accuracy 0.5 and macro F1 0.2222 with 17 train and 4 test posts on every trial, matching `results.json`. The gate returned the data unchanged. |
+| 4 | Good inputs pass | >= 90 of 100 | MET | 100, 100 and 100 of 100. No false refusals in any of the 10 kinds. |
+| 5 | Run 1 <= 8 s, runs 2 to 10 <= 2 s | both, every trial | MISSED | Run 1 took 17.33, 17.29 and 16.71 s against 8 s. The slowest of runs 2 to 10 took 5.47, 5.12 and 5.82 s against 2 s. Both thresholds were missed on all three trials, and all 27 warm runs were over 2 s (the fastest was 4.61 s). |
+
+**Criterion 5, where and how.** The stage is `train_and_score` in `run.py`. The
+Milestone 3 log splits each run into stages, and in both cases that one stage is
+almost all of the time:
+
+- Run 1: 17,716 ms of 18,078 ms in `train_and_score`, and 361.9 ms in `validate`.
+- Runs 2 to 10: for example 5,693 ms of 5,697 ms in `train_and_score`, and 4.4 ms
+  in `validate`. The gate costs about 4 ms once it is warm.
+
+So the new code is not the cause. The miss has two mechanisms inside that one
+stage:
+
+1. **Warm runs (about 5 s against a 2 s target).** Every run fine-tunes
+   DistilBERT from the base weights for 3 epochs on 17 posts, and nothing is kept
+   between runs. The notebook's own trainer reported 4.28 to 4.48 s for just the
+   training step on the three seeds, which is most of the 5 s. My criterion
+   assumed that after the first run the program would be "near instant", but only
+   the imports and the file reads can be reused. The training cannot, and
+   shortening it means changing the training settings or saving the model, both of
+   which I put out of scope.
+2. **Run 1 (about 17 s against 8 s).** Run 1 is about 12 s slower than the warm
+   runs on every trial (17.33 against a 5.10 s warm mean, 17.29 against 4.94,
+   16.71 against 5.13). Run 1 is where `torch`, `transformers` and `datasets`
+   are imported, because the imports are inside `train_and_score`, and where the
+   model files are read for the first time. I did not measure how the 12 s splits
+   between the imports and the model load, so that split is an inference.
+
+This is one problem seen twice, not two separate failures. Both numbers come from
+one stage, and the 1 to 2 s target was not based on a measurement of what that
+stage costs. [CHECK AND EDIT: my Milestone 3 log already showed warm runs near
+5.7 s before I wrote the target. Say what is true for you.]
+
+**The pattern across the criteria.** Criteria 1 to 4 are about the extension and
+the original system, and they were met with identical numbers on every trial. The
+only miss is about how long the original system's training takes. That is why the
+miss shows nothing about the gate or the log.
+
+**Were my targets set low?** Two of them probably were. Criterion 4 was met at
+100 of 100 against a target of 90, which would allow 10 good files to be refused,
+and a refused good file is a user who cannot train. I would tighten it to 100 of
+100 and widen the good set. Criterion 1 was met at 88, but 4 of those were folders
+that were blocked by accident: on this machine a folder reports 0 bytes, so the
+gate called them `file_empty`. Without those 4 it is 84, and the 12 near-duplicate
+and punctuation-only files got through and trained. [YOUR CALL: say which you
+would tighten and to what.]
+
+**Which criteria are broken rather than missed.** None is broken. I added written
+definitions under criteria 2 and 3 in `criteria.md`, because "properly logged" and
+"still works" could not be scored from the sentence alone. Those definitions were
+written in `capstone_test.py` before any trial ran, and the original lines are
+unchanged. I did not change any target, and criterion 5 stays as written because
+it was measurable and I missed it.
+
+**The Improvement**
+
+**What I changed:** One change, in `run.py`. The model and tokenizer now load from
+the local cache first (`local_files_only=True`), and only go to the Hub if the
+files are not cached. It is a function called `offline_first`, with three tests in
+`test_guard.py`, and the log now records `model_source` (`cache` or `hub`) in each
+output. Nothing else changed: the model, the settings, `EPOCHS`, the seed, the
+split and `labels.csv` are the same, and `set_seed(seed)` is called before each
+load attempt so the starting weights are the same either way. The test harness
+gained `--label after` and `--compare` so the after run goes to its own folder. The
+measurements, the targets and the files each trial builds are unchanged.
+
+**Which diagnosis pointed at it:** The miss is all inside `train_and_score`, and
+part of that stage is loading the model, which happens on every run. As I
+understand it, `from_pretrained` asks the Hub whether its cached files are still
+current each time, even when they are on disk. I did not measure that cost. Of the
+changes I allowed myself, this is the only one that touches the model load without
+touching training, which is out of scope. I did not pick "save the model", because
+that is the Shape C work in my out-of-scope list, and I did not pick fewer epochs,
+because it would change the results criterion 3 protects.
+
+**What I expect (written before the after run):** A small improvement and the same
+verdict. The Hub checks are a network round trip per file, so I expect run 1 to
+drop by up to a few seconds and the warm runs by under a second. I expect
+criterion 5 to still be MISSED, because about 4.3 s of every run is training that
+this change does not touch. Criterion 3 is the check on the change itself: if
+accuracy or macro F1 differ from 0.5 and 0.2222, the change altered training and
+has to be reverted.
+
+**How I ran it:** `python test_guard.py` first, then
+`python capstone_test.py --trial N --label after` for N = 1, 2 and 3, then
+`python capstone_test.py --report --label after` and
+`python capstone_test.py --compare`. The after files are in
+`capstone_results_after/`, and `capstone_results/` is untouched.
+
+**Run Log After**
+
+[PASTE THE TABLE FROM `python capstone_test.py --report --label after` HERE. Do
+not edit the numbers.]
+
+**Before and after, side by side**
+
+[PASTE THE TWO TABLES FROM `python capstone_test.py --compare` HERE. Do not edit
+the numbers.]
+
+**Did it help, and how do I know:** [WRITE THIS FROM THE REAL NUMBERS. Say whether
+run 1 and the warm runs got faster, and by how much, using the compare table. Say
+whether criterion 5 changed verdict. Say whether criterion 3 still matched
+`results.json`. Say whether `model_source` shows `cache` in the after logs. If it
+did not help, say that. If it helped but still missed, say how far it still is
+from 8 s and 2 s.]

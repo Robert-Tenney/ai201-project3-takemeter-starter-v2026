@@ -149,6 +149,19 @@ Regardless of the amount of bad inputs, the run is properly logged.
 **Why this target:** I want the run to be properly logged so I can use the
 failures to troubleshoot any issues.
 
+> **Revised in Milestone 6:** Over 100 bad inputs run through `run.py`,
+> `run_log.jsonl` holds exactly 100 records, one per input, and every record is
+> complete: a timestamp, an input holding the file path, an output with a status
+> (`ok`, `refused` or `error`) and a non-empty message, a code on every status
+> that is not `ok`, and a numeric `duration_ms`. `guard_log.jsonl` also holds
+> exactly 100 records.
+>
+> **Why revised:** "properly logged" and "regardless of the amount" gave me
+> nothing to check, and two people could not have scored it the same way. The
+> definition above was written into `capstone_test.py` before any trial ran, and
+> is recorded here so the criteria file matches what was tested. The original
+> line above is unchanged.
+
 ---
 
 ### 3.
@@ -157,6 +170,16 @@ The original function still works even with the new changes added.
 
 **Why this target:** I want to make sure that if the new changes were reverted
 the program will still function.
+
+> **Revised in Milestone 6:** On the real `labels.csv`, the gate returns the
+> DataFrame unchanged (equal to what `pd.read_csv` reads), and `python run.py` at
+> seed 42 reproduces the notebook's `results.json`: accuracy 0.5, macro F1
+> 0.2222 (rounded to 4 decimals), and 4 test posts.
+>
+> **Why revised:** "still works" had no measure, so I could not reach a verdict
+> from it. The definition above was written into `capstone_test.py` before any
+> trial ran, and is recorded here so the criteria file matches what was tested.
+> The original line above is unchanged.
 
 ---
 
