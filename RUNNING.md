@@ -32,6 +32,10 @@ the notebook does (seed 42, 3 epochs), then appends one structured record to
 | `python run.py --data bad.csv` | The failure path. A bad file is refused with a named reason and still logged |
 | `python validate.py` | The gate on its own, with no training. Exit code 0 passes, 1 refuses |
 | `python test_guard.py` | Checks that each kind of bad input is refused with the right code |
+| `python capstone_test.py --trial 1` | One Milestone 5 trial: 100 bad files, 100 good files, the original system, and ten timed runs. Run it as `--trial 1`, then `--trial 2`, then `--trial 3`. Takes a few minutes, and refuses to overwrite a finished trial |
+| `python capstone_test.py --report` | Prints the five-row run-log table and the real output to paste into the README, from the three finished trials |
+| `python capstone_test.py --trial 1 --label after` | The same trial after the Milestone 6 improvement, written to `capstone_results_after/` so the before numbers stay untouched. Do `--trial 2` and `--trial 3` the same way |
+| `python capstone_test.py --compare` | Prints before and after side by side, from `capstone_results/` and `capstone_results_after/` |
 
 Exit codes for `run.py`: `0` ran, `1` refused by the gate, `2` crashed. Both
 failures write a record, so a failed run never shows up only as an absence.
@@ -69,6 +73,8 @@ instructions is what a reader would have hit.
 |---|---|
 | `run_log.jsonl` | One JSON line per run: `timestamp`, `input` (data file, seed, labels, rows), `output` (status, code, message, and on success accuracy, macro F1, test size, device), `duration_ms`, and `stages_ms` |
 | `guard_log.jsonl` | One JSON line per gate check: `timestamp`, `input`, `output`, `duration_ms`, plus any warnings |
+| `capstone_results/trial_N/` | Written by `capstone_test.py`: `summary.json` plus the run and gate logs for each test. Committed as evidence |
+| `capstone_results_after/trial_N/` | The same, for the after run in Milestone 6 |
 
 `run.py` does not write `results.json`, `test_split.csv` or the three-seed
 files, so it cannot overwrite the notebook's evidence. Both log files are meant
