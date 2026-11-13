@@ -115,3 +115,66 @@ better than a coin flip rather than a high one.
      A number you missed stays where it is, gets diagnosed, and gets a fix
      attempted. That's where the points are.
      ───────────────────────────────────────────────────────────────────────── -->
+
+
+---
+
+## Capstone
+
+Five acceptance criteria for the capstone extension (Shape B, harden against
+failure): the validation gate in `guard.py`, and the gated run in `run.py` with
+its structured log. The five above are the project 3 criteria and are left as
+they were. These five were written before any capstone results existed.
+
+At least three are about the extension, and at least one is about what happens
+when input is bad. Each has a target a person could check without asking me
+what I meant, and a reason that points at something in this system.
+
+---
+
+### 1.
+
+On the new set, at least 75% of bad inputs in a set of 100 are detected and
+blocked.
+
+**Why this target:** I choose to allow a quarter of bad inputs pass to ensure
+that the criterion 2 works.
+
+---
+
+### 2.
+
+Regardless of the amount of bad inputs, the run is properly logged.
+
+**Why this target:** I want the run to be properly logged so I can use the
+failures to troubleshoot any issues.
+
+---
+
+### 3.
+
+The original function still works even with the new changes added.
+
+**Why this target:** I want to make sure that if the new changes were reverted
+the program will still function.
+
+---
+
+### 4.
+
+In the new set, at least 90% of the good inputs in a set of 100 are able to
+pass without problems.
+
+**Why this target:** I choose to set the criterion to 90% to see how the
+program would react to marking a good input as invalid.
+
+---
+
+### 5.
+
+After the first run of the program, the time it takes for the program to run is
+significantly faster. For example, the first run should take up to 5 to 8
+seconds while the rest should take 1 to 2 seconds.
+
+**Why this target:** After the initialization the program should be able to run
+near instantly.
